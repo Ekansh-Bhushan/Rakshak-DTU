@@ -13,15 +13,18 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material.Text
+import androidx.compose.material3.Text
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -33,17 +36,26 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LoginScreen(
-    navController: NavHostController
+    navController: NavHostController,
+    authViewModel: AuthViewModel = viewModel()
 ) {
+    var submitted by remember { mutableStateOf(false) }
 
-    val email = remember { mutableStateOf("") }
-    val password = remember { mutableStateOf("") }
+    val email = authViewModel.email
+    val password = authViewModel.password
+
+    LaunchedEffect(authViewModel.otpSent.value) {
+        if (authViewModel.otpSent.value) {
+            navController.navigate(Screen.OTPScreen.route + "/${authViewModel.email.value}")
+        }
+    }
 
     Column(
         modifier = Modifier.fillMaxSize(),
@@ -94,9 +106,10 @@ fun LoginScreen(
             value = password.value,
             onValueChange = {
                 password.value = it
+                submitted = true
             },
             label = { androidx.compose.material3.Text(text = "Password", color = Color.Black) },
-            isError = password.value.length < 8,
+            isError = submitted && password.value.length < 8,
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = 24.dp),
@@ -114,8 +127,7 @@ fun LoginScreen(
         Spacer(modifier = Modifier.height(16.dp))
 
         Button(onClick = {
-            val userEmail = email.value
-            navController.navigate(Screen.OTPScreen.route + "/$userEmail")
+            authViewModel.signIn()
         },
                 colors = ButtonDefaults.buttonColors(
                     containerColor = colorResource(id = R.color.lightGreen)
