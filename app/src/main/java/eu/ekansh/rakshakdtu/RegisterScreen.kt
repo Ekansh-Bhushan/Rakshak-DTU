@@ -20,8 +20,10 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -43,6 +45,9 @@ fun RegisterScreen(
     val email = remember { mutableStateOf("") }
     val password = remember { mutableStateOf("") }
     val confirmPassword = remember { mutableStateOf("") }
+
+    var submitted by remember { mutableStateOf(false) }
+    var Confirmsubmitted by remember { mutableStateOf(false) }
 
     Column(
         modifier = Modifier.fillMaxSize(),
@@ -93,9 +98,10 @@ fun RegisterScreen(
             value = password.value,
             onValueChange = {
                 password.value = it
+                submitted = true
             },
             label = { Text(text = "Password", color = Color.Black) },
-            isError = password.value.length < 8,
+            isError = submitted && password.value.length < 8,
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = 24.dp),
@@ -116,9 +122,10 @@ fun RegisterScreen(
             value = confirmPassword.value,
             onValueChange = {
                 confirmPassword.value = it
+                Confirmsubmitted = true
             },
             label = { Text(text = "Confirm Password", color = Color.Black) },
-            isError = confirmPassword.value.length < 8 && confirmPassword.value == password.value,
+            isError = Confirmsubmitted && confirmPassword.value == password.value,
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = 24.dp),
