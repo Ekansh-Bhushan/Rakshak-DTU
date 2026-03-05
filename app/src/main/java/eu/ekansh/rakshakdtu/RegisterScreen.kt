@@ -32,6 +32,7 @@ import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -100,7 +101,8 @@ fun RegisterScreen(
                 .fillMaxWidth()
                 .padding(horizontal = 8.dp),
             textStyle = TextStyle(color = Color.Black),
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
+            singleLine = true,
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email,imeAction = ImeAction.Next),
             colors = TextFieldDefaults.outlinedTextFieldColors(
                 focusedBorderColor = colorResource(id = R.color.black),
                 unfocusedBorderColor = colorResource(id = R.color.grey),
@@ -125,7 +127,8 @@ fun RegisterScreen(
                 .fillMaxWidth()
                 .padding(horizontal = 8.dp),
             textStyle = TextStyle(color = Color.Black),
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
+            singleLine = true,
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password,imeAction = ImeAction.Next),
             colors = TextFieldDefaults.outlinedTextFieldColors(
                 focusedBorderColor = colorResource(id = R.color.black),
                 unfocusedBorderColor = colorResource(id = R.color.grey),
@@ -154,7 +157,8 @@ fun RegisterScreen(
                 .fillMaxWidth()
                 .padding(horizontal = 8.dp),
             textStyle = TextStyle(color = Color.Black),
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
+            singleLine = true,
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password,imeAction = ImeAction.Next),
             colors = TextFieldDefaults.outlinedTextFieldColors(
                 focusedBorderColor = colorResource(id = R.color.black),
                 unfocusedBorderColor = colorResource(id = R.color.grey),

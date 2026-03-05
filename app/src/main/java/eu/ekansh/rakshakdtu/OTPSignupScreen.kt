@@ -35,7 +35,7 @@ import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun OTPScreen(
+fun OTPSignupScreen(
     email: String,
     navController: NavHostController
 ) {
@@ -124,7 +124,7 @@ fun OTPScreen(
         Button(
             onClick = {
                 if (otp.length == 6) {
-                    authViewModel.verifySigninOtp(email, otp)
+                    authViewModel.verifySignupOtp(email, otp)
                 } else {
                     authViewModel.errorMessage.value = "Please enter 6-digit OTP"
                 }
@@ -156,59 +156,8 @@ fun OTPScreen(
     }
 }
 
+@Preview(showBackground = true)
 @Composable
-fun OTPInput(
-    otpLength: Int = 6,
-    onOtpComplete: (String) -> Unit
-) {
-    var otp by remember { mutableStateOf("") }
-
-    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-        BasicTextField(
-            value = otp,
-            onValueChange = {
-                if (it.length <= otpLength) {
-                    otp = it
-
-                    if (it.length == otpLength) {
-                        onOtpComplete(it)
-                    }
-                }
-            },
-            keyboardOptions = KeyboardOptions(
-                keyboardType = KeyboardType.Number
-            ),
-            modifier = Modifier.fillMaxWidth(),
-            decorationBox = {
-                Row(
-                    horizontalArrangement = Arrangement.spacedBy(
-                        8.dp,
-                        Alignment.CenterHorizontally
-                    ),
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    repeat(otpLength) { index ->
-                        val char = when {
-                            index >= otp.length -> ""
-                            else -> otp[index].toString()
-                        }
-
-                        Box(
-                            contentAlignment = Alignment.Center,
-                            modifier = Modifier
-                                .size(50.dp)
-                                .border(
-                                    1.dp,
-                                    Color.LightGray,
-                                    RoundedCornerShape(10.dp)
-                                )
-                        ) {
-                            Text(text = char, fontSize = 20.sp)
-                        }
-                    }
-                }
-            }
-        )
-    }
+fun OTPScreenPreview() {
+    // OTPScreen(email = "test@example.com", navController = rememberNavController())
 }
-

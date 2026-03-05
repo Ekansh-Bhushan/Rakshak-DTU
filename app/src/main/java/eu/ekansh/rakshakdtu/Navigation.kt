@@ -90,6 +90,19 @@ fun Navigation(
             OTPScreen(email = email, navController = navController)
         }
 
+        composable(
+            Screen.OTPSignupScreen.route + "/{email}",
+            arguments = listOf(
+                navArgument("email") {
+                    type = NavType.StringType
+                    defaultValue = ""
+                }
+            )
+        ) { backStackEntry ->
+            val email = backStackEntry.arguments?.getString("email") ?: ""
+            OTPScreen(email = email, navController = navController)
+        }
+
         composable(Screen.DashboardScreen.route) {
             DashBoardScreen(navController = navController)
         }
