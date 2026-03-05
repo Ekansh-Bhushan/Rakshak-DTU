@@ -1,6 +1,7 @@
 package eu.ekansh.rakshakdtu
 
 import androidx.compose.foundation.Image
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -35,43 +36,60 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun RegisterScreen(
     navController: NavHostController
-){
+) {
+    val authViewModel: AuthViewModel = viewModel()
+
     val email = remember { mutableStateOf("") }
     val password = remember { mutableStateOf("") }
     val confirmPassword = remember { mutableStateOf("") }
 
-    var submitted by remember { mutableStateOf(false) }
-    var Confirmsubmitted by remember { mutableStateOf(false) }
+    var passwordSubmitted by remember { mutableStateOf(false) }
+    var confirmPasswordSubmitted by remember { mutableStateOf(false) }
+    var emailSubmitted by remember { mutableStateOf(false) }
+
+    // Navigate to OTP screen when OTP is sent
+    if (authViewModel.otpSent.value) {
+        LaunchedEffect(Unit) {
+            navController.navigate(Screen.OTPScreen.route + "/${email.value}")
+        }
+    }
 
     Column(
-        modifier = Modifier.fillMaxSize(),
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(horizontal = 16.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
-        Image(painter = painterResource(id = R.drawable.logo_dtu),
+        Image(
+            painter = painterResource(id = R.drawable.logo_dtu),
             contentDescription = "DTU logo",
-            modifier = Modifier.size(120.dp))
+            modifier = Modifier.size(120.dp)
+        )
         Spacer(modifier = Modifier.height(16.dp))
 
-        Text(text = "DTU Rakshak",
+        Text(
+            text = "DTU Rakshak",
             fontWeight = FontWeight.ExtraBold,
-            fontSize = 24.sp)
+            fontSize = 24.sp
+        )
         Spacer(modifier = Modifier.height(8.dp))
 
         Text(text = "Campus Vehicle Monitoring System")
         Spacer(modifier = Modifier.height(16.dp))
 
-        Text(text = "Create your admin account", /*TODO admin verification*/
-            fontSize = 18.sp)
+        Text(text = "Create your admin account", fontSize = 18.sp)
 
         Spacer(modifier = Modifier.height(16.dp))
 
+        // Email TextField
         OutlinedTextField(
             value = email.value,
             onValueChange = {
@@ -80,7 +98,7 @@ fun RegisterScreen(
             label = { Text(text = "Email", color = Color.Black) },
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 24.dp),
+                .padding(horizontal = 8.dp),
             textStyle = TextStyle(color = Color.Black),
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
             colors = TextFieldDefaults.outlinedTextFieldColors(
@@ -94,17 +112,18 @@ fun RegisterScreen(
 
         Spacer(modifier = Modifier.height(16.dp))
 
+        // Password TextField
         OutlinedTextField(
             value = password.value,
             onValueChange = {
                 password.value = it
-                submitted = true
+                passwordSubmitted = true
             },
-            label = { Text(text = "Password", color = Color.Black) },
-            isError = submitted && password.value.length < 8,
+            label = { Text(text = "Password (min 8 chars)", color = Color.Black) },
+            isError = passwordSubmitted && password.value.length < 8,
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 24.dp),
+                .padding(horizontal = 8.dp),
             textStyle = TextStyle(color = Color.Black),
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
             colors = TextFieldDefaults.outlinedTextFieldColors(
@@ -116,19 +135,24 @@ fun RegisterScreen(
             )
         )
 
+        if (passwordSubmitted && password.value.length < 8) {
+            Text(text = "Password must be at least 8 characters", color = Color.Red, fontSize = 12.sp)
+        }
+
         Spacer(modifier = Modifier.height(16.dp))
 
+        // Confirm Password TextField
         OutlinedTextField(
             value = confirmPassword.value,
             onValueChange = {
                 confirmPassword.value = it
-                Confirmsubmitted = true
+                confirmPasswordSubmitted = true
             },
             label = { Text(text = "Confirm Password", color = Color.Black) },
-            isError = Confirmsubmitted && confirmPassword.value == password.value,
+            isError = confirmPasswordSubmitted && confirmPassword.value != password.value,
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 24.dp),
+                .padding(horizontal = 8.dp),
             textStyle = TextStyle(color = Color.Black),
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
             colors = TextFieldDefaults.outlinedTextFieldColors(
@@ -140,19 +164,43 @@ fun RegisterScreen(
             )
         )
 
+        if (confirmPasswordSubmitted && confirmPassword.value != password.value) {
+            Text(text = "Passwords do not match", color = Color.Red, fontSize = 12.sp)
+        }
+
         Spacer(modifier = Modifier.height(16.dp))
 
-        Button(onClick = {
-            val userEmail = email.value
-            navController.navigate(Screen.OTPScreen.route + "/$userEmail")
-        },
+        // Error Message Display
+        if (authViewModel.errorMessage.value != null) {
+            Text(
+                text = authViewModel.errorMessage.value ?: "",
+                color = Color.Red,
+                fontSize = 12.sp,
+                modifier = Modifier.padding(horizontal = 8.dp)
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+        }
+
+        // Register Button
+        Button(
+            onClick = {
+                if (email.value.isNotEmpty() && password.value.length >= 8 && confirmPassword.value == password.value) {
+                    authViewModel.signup(email.value, password.value)
+                } else {
+                    authViewModel.errorMessage.value = "Please fill all fields correctly"
+                }
+            },
             colors = ButtonDefaults.buttonColors(
                 containerColor = colorResource(id = R.color.lightGreen)
-            )
+            ),
+            modifier = Modifier.fillMaxWidth(0.6f)
         ) {
             Text(text = "Continue With OTP", color = Color.White)
         }
 
+        Spacer(modifier = Modifier.height(16.dp))
+
+        // Sign In Link
         Row {
             Text(text = "Already have an account?")
             Spacer(modifier = Modifier.width(4.dp))
@@ -164,13 +212,11 @@ fun RegisterScreen(
                 }
             )
         }
-
     }
 }
-
 
 @Preview(showBackground = true)
 @Composable
 fun RegisterScreenPreview() {
-//    RegisterScreen()
+    // RegisterScreen()
 }

@@ -39,18 +39,17 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LoginScreen(
     navController: NavHostController,
-    authViewModel: AuthViewModel = viewModel()
 ) {
     var submitted by remember { mutableStateOf(false) }
-
+    val authViewModel: AuthViewModel = viewModel()
     val email = authViewModel.email
     val password = authViewModel.password
 
+    // Navigate to OTP screen when OTP is sent
     LaunchedEffect(authViewModel.otpSent.value) {
         if (authViewModel.otpSent.value) {
             navController.navigate(Screen.OTPScreen.route + "/${authViewModel.email.value}")
@@ -58,37 +57,46 @@ fun LoginScreen(
     }
 
     Column(
-        modifier = Modifier.fillMaxSize(),
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(horizontal = 16.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
-        Image(painter = painterResource(id = R.drawable.logo_dtu),
+        Image(
+            painter = painterResource(id = R.drawable.logo_dtu),
             contentDescription = "DTU logo",
-            modifier = Modifier.size(120.dp))
+            modifier = Modifier.size(120.dp)
+        )
         Spacer(modifier = Modifier.height(16.dp))
 
-        Text(text = "DTU Rakshak",
+        Text(
+            text = "DTU Rakshak",
             fontWeight = FontWeight.ExtraBold,
-            fontSize = 24.sp)
+            fontSize = 24.sp
+        )
         Spacer(modifier = Modifier.height(8.dp))
 
         Text(text = "Campus Vehicle Monitoring System")
         Spacer(modifier = Modifier.height(16.dp))
 
-        Text(text = "Sign In to Access Campus Vehicle Monitoring Dashboard",
-            fontSize = 12.sp)
+        Text(
+            text = "Sign In to Access Campus Vehicle Monitoring Dashboard",
+            fontSize = 12.sp
+        )
 
         Spacer(modifier = Modifier.height(16.dp))
 
+        // Email TextField
         OutlinedTextField(
             value = email.value,
             onValueChange = {
                 email.value = it
             },
-            label = { androidx.compose.material3.Text(text = "Email", color = Color.Black) },
+            label = { Text(text = "Email", color = Color.Black) },
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 24.dp),
+                .padding(horizontal = 8.dp),
             textStyle = TextStyle(color = Color.Black),
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
             colors = TextFieldDefaults.outlinedTextFieldColors(
@@ -102,17 +110,18 @@ fun LoginScreen(
 
         Spacer(modifier = Modifier.height(16.dp))
 
+        // Password TextField
         OutlinedTextField(
             value = password.value,
             onValueChange = {
                 password.value = it
                 submitted = true
             },
-            label = { androidx.compose.material3.Text(text = "Password", color = Color.Black) },
+            label = { Text(text = "Password", color = Color.Black) },
             isError = submitted && password.value.length < 8,
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 24.dp),
+                .padding(horizontal = 8.dp),
             textStyle = TextStyle(color = Color.Black),
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
             colors = TextFieldDefaults.outlinedTextFieldColors(
@@ -124,20 +133,45 @@ fun LoginScreen(
             )
         )
 
+        if (submitted && password.value.length < 8) {
+            Text(text = "Password must be at least 8 characters", color = Color.Red, fontSize = 12.sp)
+        }
+
         Spacer(modifier = Modifier.height(16.dp))
 
-        Button(onClick = {
-            authViewModel.signIn()
-        },
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = colorResource(id = R.color.lightGreen)
-                )
-            ) {
+        // Error Message Display
+        if (authViewModel.errorMessage.value != null) {
+            Text(
+                text = authViewModel.errorMessage.value ?: "",
+                color = Color.Red,
+                fontSize = 12.sp,
+                modifier = Modifier.padding(horizontal = 8.dp)
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+        }
+
+        // Sign In Button
+        Button(
+            onClick = {
+                if (email.value.isNotEmpty() && password.value.length >= 8) {
+                    authViewModel.signIn()
+                } else {
+                    authViewModel.errorMessage.value = "Please enter valid email and password"
+                }
+            },
+            colors = ButtonDefaults.buttonColors(
+                containerColor = colorResource(id = R.color.lightGreen)
+            ),
+            modifier = Modifier.fillMaxWidth(0.6f)
+        ) {
             Text(text = "Continue With OTP", color = Color.White)
         }
 
+        Spacer(modifier = Modifier.height(16.dp))
+
+        // Sign Up Link
         Row {
-            Text(text = "New Here ?")
+            Text(text = "New Here?")
             Spacer(modifier = Modifier.width(4.dp))
             Text(
                 text = "Create Account",
@@ -147,13 +181,11 @@ fun LoginScreen(
                 }
             )
         }
-
     }
 }
-
 
 @Preview(showBackground = true)
 @Composable
 fun LoginScreenPreview() {
-//    LoginScreen()
+    // LoginScreen()
 }
