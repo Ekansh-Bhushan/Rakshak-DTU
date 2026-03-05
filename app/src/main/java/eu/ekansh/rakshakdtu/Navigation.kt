@@ -100,7 +100,7 @@ fun Navigation(
             )
         ) { backStackEntry ->
             val email = backStackEntry.arguments?.getString("email") ?: ""
-            OTPScreen(email = email, navController = navController)
+            OTPSignupScreen(email = email, navController = navController)
         }
 
         composable(Screen.DashboardScreen.route) {

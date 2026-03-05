@@ -52,6 +52,8 @@ android {
 
 dependencies {
 
+    implementation("androidx.compose.material:material-icons-extended")
+
     //Network Call
     implementation("com.squareup.retrofit2:retrofit:2.9.0")
 

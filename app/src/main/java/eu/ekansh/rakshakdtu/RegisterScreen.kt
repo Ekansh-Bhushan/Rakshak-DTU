@@ -14,7 +14,10 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.Icon
+import androidx.compose.material.IconButton
 import androidx.compose.material.Text
+import androidx.compose.material.icons.Icons
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -34,11 +37,16 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
+import androidx.compose.material.icons.filled.Visibility
+import androidx.compose.material.icons.filled.VisibilityOff
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -55,10 +63,13 @@ fun RegisterScreen(
     var confirmPasswordSubmitted by remember { mutableStateOf(false) }
     var emailSubmitted by remember { mutableStateOf(false) }
 
+    var passwordVisible by remember { mutableStateOf(false) }
+    var confirmPasswordVisible by remember { mutableStateOf(false) }
+
     // Navigate to OTP screen when OTP is sent
     if (authViewModel.otpSent.value) {
         LaunchedEffect(Unit) {
-            navController.navigate(Screen.OTPScreen.route + "/${email.value}")
+            navController.navigate(Screen.OTPSignupScreen.route + "/${email.value}")
         }
     }
 
@@ -128,6 +139,20 @@ fun RegisterScreen(
                 .padding(horizontal = 8.dp),
             textStyle = TextStyle(color = Color.Black),
             singleLine = true,
+            visualTransformation = if (passwordVisible)
+                VisualTransformation.None
+            else
+                PasswordVisualTransformation(),
+            trailingIcon = {
+                val image = if (passwordVisible)
+                    Icons.Filled.Visibility
+                else
+                    Icons.Filled.VisibilityOff
+
+                IconButton(onClick = { passwordVisible = !passwordVisible }) {
+                    Icon(imageVector = image, contentDescription = "Toggle password visibility")
+                }
+            },
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password,imeAction = ImeAction.Next),
             colors = TextFieldDefaults.outlinedTextFieldColors(
                 focusedBorderColor = colorResource(id = R.color.black),
@@ -158,6 +183,22 @@ fun RegisterScreen(
                 .padding(horizontal = 8.dp),
             textStyle = TextStyle(color = Color.Black),
             singleLine = true,
+            visualTransformation = if (confirmPasswordVisible)
+                VisualTransformation.None
+            else
+                PasswordVisualTransformation(),
+            trailingIcon = {
+                val image = if (confirmPasswordVisible)
+                    Icons.Filled.Visibility
+                else
+                    Icons.Filled.VisibilityOff
+
+                IconButton(onClick = {
+                    confirmPasswordVisible = !confirmPasswordVisible
+                }) {
+                    Icon(imageVector = image, contentDescription = "Toggle password visibility")
+                }
+            },
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password,imeAction = ImeAction.Next),
             colors = TextFieldDefaults.outlinedTextFieldColors(
                 focusedBorderColor = colorResource(id = R.color.black),
@@ -222,5 +263,5 @@ fun RegisterScreen(
 @Preview(showBackground = true)
 @Composable
 fun RegisterScreenPreview() {
-    // RegisterScreen()
+//     RegisterScreen()
 }
