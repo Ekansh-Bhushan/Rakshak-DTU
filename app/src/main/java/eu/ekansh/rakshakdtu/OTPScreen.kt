@@ -44,18 +44,29 @@ fun OTPScreen(
     val context = LocalContext.current
     val tokenManager = TokenManager(context)
     val scope = rememberCoroutineScope()
+    var isNavigating by remember { mutableStateOf(false) }
 
     // Handle successful OTP verification
     LaunchedEffect(authViewModel.accessToken.value) {
         val token = authViewModel.accessToken.value
 
-        if (token != null) {
-            scope.launch {
-                tokenManager.saveToken(token)
-            }
+        // Only navigate if token exists and we haven't already started navigating
+        if (token != null && !isNavigating) {
+            isNavigating = true
 
-            navController.navigate(Screen.DashboardScreen.route) {
-                popUpTo(Screen.LoginScreen.route) { inclusive = true }
+            // Save token first, then navigate
+            scope.launch {
+                try {
+                    tokenManager.saveToken(token)
+
+                    // Navigate to dashboard after token is saved
+                    navController.navigate(Screen.DashboardScreen.route) {
+                        popUpTo(Screen.LoginScreen.route) { inclusive = true }
+                    }
+                } catch (e: Exception) {
+                    authViewModel.errorMessage.value = "Failed to save session: ${e.message}"
+                    isNavigating = false
+                }
             }
         }
     }
@@ -119,6 +130,7 @@ fun OTPScreen(
                 }
             },
             modifier = Modifier.fillMaxWidth(0.6f),
+            enabled = !isNavigating,
             colors = ButtonDefaults.buttonColors(
                 containerColor = colorResource(id = R.color.lightGreen)
             )
@@ -131,9 +143,10 @@ fun OTPScreen(
         // Back Button
         Button(
             onClick = {
-                navController.navigate(Screen.LoginScreen.route)
+                navController.popBackStack()
             },
             modifier = Modifier.fillMaxWidth(0.6f),
+            enabled = !isNavigating,
             colors = ButtonDefaults.buttonColors(
                 containerColor = colorResource(id = R.color.back_button_color)
             )
