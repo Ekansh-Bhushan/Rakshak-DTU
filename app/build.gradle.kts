@@ -36,6 +36,7 @@ android {
     }
     kotlinOptions {
         jvmTarget = "1.8"
+        freeCompilerArgs += "-Xopt-in=androidx.compose.material3.ExperimentalMaterial3Api"
     }
     buildFeatures {
         compose = true
@@ -45,12 +46,24 @@ android {
     }
     packaging {
         resources {
-            excludes += "/META-INF/{AL2.0,LGPL2.1}"
+            excludes += listOf(
+                "/META-INF/{AL2.0,LGPL2.1}",
+                "META-INF/INDEX.LIST",
+                "META-INF/io.netty.versions.properties",
+                "META-INF/MANIFEST.MF",
+                "META-INF/DEPENDENCIES"
+            )
         }
     }
+
+
 }
 
 dependencies {
+
+    //Graph
+    implementation("com.patrykandpatrick.vico:compose:1.13.1")
+    implementation("com.patrykandpatrick.vico:compose-m3:1.13.1")
 
     implementation("androidx.compose.material:material-icons-extended")
 
@@ -63,6 +76,7 @@ dependencies {
     // ROOM
     implementation("androidx.room:room-runtime:2.6.0")
     implementation("androidx.room:room-ktx:2.6.0")
+    implementation("com.google.firebase:firebase-appdistribution-gradle:5.2.1")
     kapt("androidx.room:room-compiler:2.6.0")
     implementation("androidx.datastore:datastore-preferences:1.0.0")
 

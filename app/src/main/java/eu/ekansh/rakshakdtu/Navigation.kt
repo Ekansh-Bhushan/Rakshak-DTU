@@ -104,7 +104,19 @@ fun Navigation(
         }
 
         composable(Screen.DashboardScreen.route) {
-            DashBoardScreen(navController = navController)
+            AppBarView(navController = navController)
+        }
+
+        composable(Screen.CameraScreen.route) {
+            CameraScreen()
+        }
+
+        composable(Screen.VehicleScreen.route) {
+            VehicleScreen()
+        }
+
+        composable(Screen.LogScreen.route) {
+            LogScreen()
         }
     }
 }

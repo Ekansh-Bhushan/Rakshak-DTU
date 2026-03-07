@@ -7,4 +7,10 @@ sealed class Screen(val route:String) {
 
     object OTPSignupScreen: Screen("otpSignupScreen")
     object DashboardScreen: Screen("dashboard")
+
+    object CameraScreen : Screen("cameraScreen")
+
+    object VehicleScreen : Screen("vehicleScreen")
+
+    object LogScreen : Screen("logScreen")
 }
