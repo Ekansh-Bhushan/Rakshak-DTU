@@ -52,6 +52,48 @@ import androidx.compose.ui.unit.sp
 fun VehicleScreen(){
 
     val totalVehicleCount = 12
+    var showRegisterForm by remember { mutableStateOf(false) }
+    var showImportExcelForm by remember {
+        mutableStateOf(false)
+    }
+
+    if (showRegisterForm) {
+
+        androidx.compose.ui.window.Dialog(
+            onDismissRequest = { showRegisterForm = false }
+        ) {
+
+            Card(
+                modifier = Modifier.width(420.dp),
+                shape = RoundedCornerShape(16.dp),
+                colors = CardDefaults.cardColors(
+                    containerColor = Color.White
+                )
+            ) {
+
+                RegisterVehicleForm(onClose = { showRegisterForm = false })
+            }
+        }
+    }
+
+    if (showImportExcelForm) {
+
+        androidx.compose.ui.window.Dialog(
+            onDismissRequest = { showImportExcelForm = false }
+        ) {
+
+            Card(
+                modifier = Modifier.width(420.dp),
+                shape = RoundedCornerShape(16.dp),
+                colors = CardDefaults.cardColors(
+                    containerColor = Color.White
+                )
+            ) {
+
+                ImportVehiclesDialog(onClose = { showImportExcelForm = false })
+            }
+        }
+    }
 
     Column(
         modifier = Modifier
@@ -72,7 +114,7 @@ fun VehicleScreen(){
 
         Row {
 
-            Button(onClick = { /*TODO*/ },
+            Button(onClick = { showImportExcelForm = true },
                 colors = ButtonDefaults.buttonColors(
                     containerColor = colorResource(id = R.color.lightGreen)
                 )
@@ -83,7 +125,7 @@ fun VehicleScreen(){
             
             Spacer(modifier = Modifier.width(8.dp))
 
-            Button(onClick = { /*TODO*/ },
+            Button(onClick = { showRegisterForm = true },
                 colors = ButtonDefaults.buttonColors(
                     containerColor = colorResource(id = R.color.lightGreen)
                 )
