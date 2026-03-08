@@ -60,7 +60,7 @@ fun AppBarView(navController: NavHostController) {
     ) {
 
         Scaffold(
-
+            containerColor = Color.White,
             topBar = {
                 TopAppBar(
                     title = { Text("DTU Rakshak", color = Color.White) },
