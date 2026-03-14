@@ -47,3 +47,20 @@ data class ListOfGetVehicles(
     val page : Int,
     val limit : Int
 )
+
+data class DeleteVehicleResponse(
+    val statusCode : Int,
+    val data : Any?,
+    val message : String,
+    val success : Boolean
+)
+
+data class VehicleUpdateRequest(
+    val name: String? = null,
+    val fathersName: String? = null,
+    val dept: String? = null,
+    val vehicleType: String? = null,
+    val stickerNo: String? = null,
+    val mobileNo: String? = null,
+    val dateOfIssue: String? = null
+)

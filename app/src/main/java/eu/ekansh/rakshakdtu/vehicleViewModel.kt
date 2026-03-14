@@ -57,4 +57,35 @@ class VehicleViewModel (
             }
         }
     }
+
+    fun deleteAVehicle(token: String,numberPate : String){
+        viewModelScope.launch {
+            try {
+                val response = vehicleRepository.deleteAVehicle(token,numberPate)
+                if(response.isSuccessful){
+                    toastMessage.value = "Vehicle Delete Successfully"
+                }
+
+            } catch (e : Exception) {
+                errorMessage.value = e.message ?: "An error occurred during deletion of the vehicle"
+            }
+        }
+    }
+
+    fun editVehicle(token: String, vehicleNo: String, updateRequest: VehicleUpdateRequest) {
+        viewModelScope.launch {
+            try {
+                val response = vehicleRepository.updateVehicle(token, vehicleNo, updateRequest)
+                if (response.isSuccessful) {
+                    toastMessage.value = "Vehicle updated successfully"
+                    // Refresh the list to see changes
+                    getAllVehiclesDetails(token)
+                } else {
+                    errorMessage.value = "Update failed: ${response.code()}"
+                }
+            } catch (e: Exception) {
+                errorMessage.value = e.message ?: "An error occurred during update"
+            }
+        }
+    }
 }

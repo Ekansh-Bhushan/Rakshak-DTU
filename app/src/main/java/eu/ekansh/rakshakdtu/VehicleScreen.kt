@@ -89,6 +89,22 @@ fun VehicleScreen(viewModel: VehicleViewModel = viewModel(),navController: NavHo
         mutableStateOf(false)
     }
 
+    // Inside VehicleScreen
+    var vehicleToEdit by remember { mutableStateOf<VehicleData?>(null) }
+
+    if (vehicleToEdit != null) {
+        androidx.compose.ui.window.Dialog(onDismissRequest = { vehicleToEdit = null }) {
+            Card(shape = RoundedCornerShape(16.dp)) {
+                EditVehicleForm(
+                    token = storedToken ?: "",
+                    vehicle = vehicleToEdit!!,
+                    viewModel = viewModel,
+                    onClose = { vehicleToEdit = null }
+                )
+            }
+        }
+    }
+
     if (showRegisterForm) {
 
         androidx.compose.ui.window.Dialog(
@@ -187,7 +203,14 @@ fun VehicleScreen(viewModel: VehicleViewModel = viewModel(),navController: NavHo
         } else if (vehicles == null) {
             Text("Loading vehicles...")
         } else {
-            VehicleTable(vehicles!!)
+            VehicleTable(
+                vehicles = vehicles!!,
+                token = storedToken ?: "",
+                viewModel = viewModel,
+                onEditClick = { vehicle ->
+                    vehicleToEdit = vehicle
+                }
+            )
         }
     }
 }
@@ -233,7 +256,7 @@ fun SearchBar() {
 }
 
 @Composable
-fun VehicleTable(vehicles: List<VehicleData>) {
+fun VehicleTable(vehicles: List<VehicleData>,token : String, viewModel: VehicleViewModel,onEditClick: (VehicleData) -> Unit) {
     val horizontalScrollState = rememberScrollState()
 
     Column(
@@ -253,7 +276,7 @@ fun VehicleTable(vehicles: List<VehicleData>) {
 
                 items(vehicles) {vehicle ->
 
-                    VehicleRow(vehicle)
+                    VehicleRow(vehicle, token, viewModel,onEditClick = onEditClick)
 
                     Divider(color = Color(0xFFEAEAEA))
                 }
@@ -293,7 +316,10 @@ fun RowScope.HeaderText(text:String, weight:Float){
 }
 
 @Composable
-fun VehicleRow(vehicle: VehicleData) {
+fun VehicleRow(vehicle: VehicleData,
+               token: String,
+               viewModel: VehicleViewModel,
+               onEditClick: (VehicleData) -> Unit) {
 
     Row(
         modifier = Modifier
@@ -320,7 +346,10 @@ fun VehicleRow(vehicle: VehicleData) {
             modifier = Modifier.weight(1.3f)
         )
 
-        ActionButtons()
+        ActionButtons(
+            onEditClick = { onEditClick(vehicle) },
+            onDeleteClick = { viewModel.deleteAVehicle(token, vehicle.vehicleNo) }
+        )
     }
 }
 
@@ -388,17 +417,21 @@ fun RowScope.Chip(text:String, weight:Float){
 }
 
 @Composable
-fun RowScope.ActionButtons(){
+fun RowScope.ActionButtons(onEditClick: () -> Unit, // Add callback
+                           onDeleteClick: () -> Unit
+){
 
     Row(
         modifier = Modifier.weight(1f)
     ){
 
-        IconButton(onClick = {}) {
+        IconButton(onClick = onEditClick) {
             Icon(Icons.Default.Edit, contentDescription = null)
         }
 
-        IconButton(onClick = {}) {
+        IconButton(onClick = {
+            onDeleteClick()
+        }) {
             Icon(
                 Icons.Default.Delete,
                 contentDescription = null,

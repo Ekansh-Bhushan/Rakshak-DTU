@@ -22,4 +22,19 @@ class vehicleRepository {
         val request = VehicleAddRequest(name, fathersName,dept,dateOfIssue, vehicleType, stickerNo, vehicleNo, mobileNo)
         return vehicleRakshakService.addVehicle(accessToken = "Bearer $token",request=request)
     }
+
+    suspend fun deleteAVehicle(
+        token : String,
+        numberPlate : String
+    ) : Response<DeleteVehicleResponse> {
+        return vehicleRakshakService.deleteAVehicle(accessToken = "Bearer $token",vehicleNo = numberPlate)
+    }
+
+    suspend fun updateVehicle(
+        token: String,
+        vehicleNo: String,
+        request: VehicleUpdateRequest
+    ): Response<Unit> {
+        return vehicleRakshakService.editAVehicle("Bearer $token", vehicleNo, request)
+    }
 }
