@@ -11,6 +11,7 @@ class VehicleViewModel (
 
     var vehicleList = mutableStateOf<List<VehicleData>?>(null)
     var errorMessage = mutableStateOf<String?>(null)
+    var toastMessage = mutableStateOf<String?>(null)
 
     fun getAllVehiclesDetails(accessToken: String){
         viewModelScope.launch {
@@ -30,6 +31,29 @@ class VehicleViewModel (
                 }
             } catch (e : Exception) {
                 errorMessage.value = e.message ?: "An error occurred during fetching the vehicle details"
+            }
+        }
+    }
+
+    fun addAVehicleData(token : String,
+                        name : String,
+                        fathersName : String,
+                        dept : String,
+                        dateOfIssue : String,
+                        vehicleType : String,
+                        stickerNo : String,
+                        vehicleNo : String,
+                        mobileNo : String
+    ){
+        viewModelScope.launch {
+            try {
+                val response = vehicleRepository.addAVehicle(token, name, fathersName, dept, dateOfIssue, vehicleType, stickerNo, vehicleNo, mobileNo)
+                if(response.isSuccessful){
+                    toastMessage.value = "Vehicle Entry Successfully"
+                }
+
+            } catch (e : Exception) {
+                errorMessage.value = e.message ?: "An error occurred during adding the vehicle"
             }
         }
     }

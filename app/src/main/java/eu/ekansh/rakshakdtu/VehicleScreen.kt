@@ -1,5 +1,6 @@
 package eu.ekansh.rakshakdtu
 
+import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Box
@@ -35,6 +36,7 @@ import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -57,22 +59,29 @@ fun VehicleScreen(viewModel: VehicleViewModel = viewModel(),navController: NavHo
 
     val vehicles by viewModel.vehicleList
     val errorMessage by viewModel.errorMessage
+    val toastMessage by viewModel.toastMessage
 
     val context = LocalContext.current
     val tokenManager = remember { TokenManager(context) }
+    var storedToken by remember { mutableStateOf<String?>(null) }
+
+    LaunchedEffect(toastMessage) {
+        toastMessage?.let {
+            Toast.makeText(context, it, Toast.LENGTH_SHORT).show()
+            viewModel.toastMessage.value = null
+        }
+    }
 
     LaunchedEffect(Unit){
         val token = tokenManager.getToken()
         if (token != null) {
+            storedToken = token
             viewModel.getAllVehiclesDetails(token)
         } else {
             viewModel.errorMessage.value = "No session found. Please login."
             navController.navigate(Screen.LoginScreen.route)
         }
     }
-
-
-    viewModel.getAllVehiclesDetails("")
 
     val totalVehicleCount = vehicles?.size ?: 0
     var showRegisterForm by remember { mutableStateOf(false) }
@@ -94,7 +103,7 @@ fun VehicleScreen(viewModel: VehicleViewModel = viewModel(),navController: NavHo
                 )
             ) {
 
-                RegisterVehicleForm(onClose = { showRegisterForm = false })
+                RegisterVehicleForm(token = storedToken ?: "",onClose = { showRegisterForm = false })
             }
         }
     }
@@ -178,7 +187,7 @@ fun VehicleScreen(viewModel: VehicleViewModel = viewModel(),navController: NavHo
         } else if (vehicles == null) {
             Text("Loading vehicles...")
         } else {
-            vehicleTable(vehicles!!)
+            VehicleTable(vehicles!!)
         }
     }
 }
@@ -224,7 +233,7 @@ fun SearchBar() {
 }
 
 @Composable
-fun vehicleTable(vehicles: List<VehicleData>) {
+fun VehicleTable(vehicles: List<VehicleData>) {
     val horizontalScrollState = rememberScrollState()
 
     Column(

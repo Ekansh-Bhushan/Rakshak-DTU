@@ -12,6 +12,7 @@ interface VehicleAPIServices {
 
     @POST("vehicles")
     suspend fun addVehicle(
+        @Header("Authorization") accessToken : String,
         @Body request: VehicleAddRequest
     ) : Response<VehicleAddResponse>
 
