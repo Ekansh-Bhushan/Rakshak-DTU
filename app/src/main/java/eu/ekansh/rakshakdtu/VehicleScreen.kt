@@ -24,7 +24,6 @@ import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Upload
 import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonColors
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -35,6 +34,7 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -42,16 +42,39 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import eu.ekansh.rakshakdtu.data.TokenManager
+import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavHostController
 
 @Composable
-fun VehicleScreen(){
+fun VehicleScreen(viewModel: VehicleViewModel = viewModel(),navController: NavHostController){
 
-    val totalVehicleCount = 12
+    val vehicles by viewModel.vehicleList
+    val errorMessage by viewModel.errorMessage
+
+    val context = LocalContext.current
+    val tokenManager = remember { TokenManager(context) }
+
+    LaunchedEffect(Unit){
+        val token = tokenManager.getToken()
+        if (token != null) {
+            viewModel.getAllVehiclesDetails(token)
+        } else {
+            viewModel.errorMessage.value = "No session found. Please login."
+            navController.navigate(Screen.LoginScreen.route)
+        }
+    }
+
+
+    viewModel.getAllVehiclesDetails("")
+
+    val totalVehicleCount = vehicles?.size ?: 0
     var showRegisterForm by remember { mutableStateOf(false) }
     var showImportExcelForm by remember {
         mutableStateOf(false)
@@ -150,7 +173,13 @@ fun VehicleScreen(){
 
         Spacer(modifier = Modifier.height(8.dp))
 
-        vehicleTable()
+        if (errorMessage != null) {
+            Text("Error: $errorMessage", color = Color.Red)
+        } else if (vehicles == null) {
+            Text("Loading vehicles...")
+        } else {
+            vehicleTable(vehicles!!)
+        }
     }
 }
 
@@ -195,16 +224,7 @@ fun SearchBar() {
 }
 
 @Composable
-fun vehicleTable() {
-
-    val vehicles = listOf(
-        Vehicle("DL3CAF0001","Ravi Kumar","S/o Suresh Kumar","ECE","2W","STK-001","9876543210"),
-        Vehicle("HR26DK5678","Priya Singh","S/o Mohan Singh","MBA","4W","STK-002","9123456780"),
-        Vehicle("UP32EF1234","Amit Sharma","S/o Rajesh Sharma","CSE","2W","STK-003","9988776655"),
-        Vehicle("DL8CAB9900","Neha Gupta","S/o Vikas Gupta","ME","Electric","STK-004","9871234560"),
-        Vehicle("DL1PB3344","Suresh Yadav","S/o Ram Yadav","Civil","Heavy","STK-005","9765432100"),
-    )
-
+fun vehicleTable(vehicles: List<VehicleData>) {
     val horizontalScrollState = rememberScrollState()
 
     Column(
@@ -222,9 +242,9 @@ fun vehicleTable() {
 
             LazyColumn {
 
-                items(vehicles) {
+                items(vehicles) {vehicle ->
 
-                    VehicleRow(it)
+                    VehicleRow(vehicle)
 
                     Divider(color = Color(0xFFEAEAEA))
                 }
@@ -264,7 +284,7 @@ fun RowScope.HeaderText(text:String, weight:Float){
 }
 
 @Composable
-fun VehicleRow(vehicle: Vehicle) {
+fun VehicleRow(vehicle: VehicleData) {
 
     Row(
         modifier = Modifier
@@ -275,19 +295,19 @@ fun VehicleRow(vehicle: Vehicle) {
 
         VehiclePlate(vehicle.vehicleNo)
 
-        OwnerColumn(vehicle.owner, vehicle.father)
+        OwnerColumn(vehicle.name, vehicle.fathersName)
 
         Chip(vehicle.dept, 1f)
 
-        Chip(vehicle.type, 1f)
+        Chip(vehicle.vehicleType, 1f)
 
         Text(
-            vehicle.sticker,
+            vehicle.stickerNo,
             modifier = Modifier.weight(1f)
         )
 
         Text(
-            vehicle.mobile,
+            vehicle.mobileNo,
             modifier = Modifier.weight(1.3f)
         )
 
@@ -382,5 +402,5 @@ fun RowScope.ActionButtons(){
 @Preview(showBackground = true)
 @Composable
 fun VehicleScreenPreview() {
-     VehicleScreen()
+//     VehicleScreen()
 }

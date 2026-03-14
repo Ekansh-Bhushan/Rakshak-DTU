@@ -112,7 +112,7 @@ fun Navigation(
         }
 
         composable(Screen.VehicleScreen.route) {
-            VehicleScreen()
+            VehicleScreen(navController= navController)
         }
 
         composable(Screen.LogScreen.route) {

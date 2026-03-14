@@ -102,7 +102,7 @@ fun AppBarView(navController: NavHostController) {
                 }
 
                 composable(Screen.VehicleScreen.route) {
-                    VehicleScreen()
+                    VehicleScreen(navController=navController)
                 }
 
                 composable(Screen.LogScreen.route) {
