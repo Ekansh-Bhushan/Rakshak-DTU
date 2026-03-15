@@ -35,6 +35,7 @@ fun AppDrawer(
     navController: NavHostController,
     selectedItem: String = "Dashboard",
     onItemClick: (String) -> Unit,
+    onCloseDrawer: () -> Unit,
 ) {
 
     val navBackStackEntry by navController.currentBackStackEntryAsState()
@@ -102,6 +103,7 @@ fun AppDrawer(
                     popUpTo(Screen.DashboardScreen.route)
                     launchSingleTop = true
                 }
+                onCloseDrawer()
             }
         )
 
@@ -114,6 +116,7 @@ fun AppDrawer(
                     popUpTo(Screen.DashboardScreen.route)
                     launchSingleTop = true
                 }
+                onCloseDrawer()
             }
         )
 
@@ -126,6 +129,7 @@ fun AppDrawer(
                     popUpTo(Screen.DashboardScreen.route)
                     launchSingleTop = true
                 }
+                onCloseDrawer()
             }
         )
 
@@ -138,6 +142,7 @@ fun AppDrawer(
                     popUpTo(Screen.DashboardScreen.route)
                     launchSingleTop = true
                 }
+                onCloseDrawer()
             }
         )
 

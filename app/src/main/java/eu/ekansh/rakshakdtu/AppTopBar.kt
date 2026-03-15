@@ -56,7 +56,8 @@ fun AppBarView(navController: NavHostController) {
             ModalDrawerSheet {
                 AppDrawer(
                     navController = localnavController,
-                    onItemClick = {}
+                    onItemClick = {},
+                    onCloseDrawer = { scope.launch { drawerState.close() } },
                 )
             }
         }
