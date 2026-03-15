@@ -39,4 +39,9 @@ interface VehicleAPIServices {
         @Body request: VehicleUpdateRequest
     ) : Response<Unit>
 
+    @GET("scan/logs/active")
+    suspend fun getVehicleOnCampus(
+        @Header("Authorization") accessToken : String,
+    ) : Response<VehicleOnCampusRecords>
+
 }

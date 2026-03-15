@@ -38,4 +38,9 @@ class vehicleRepository {
         return vehicleRakshakService.editAVehicle("Bearer $token", vehicleNo, request)
     }
 
+    suspend fun getVehicleOnCampus(
+        token : String
+    ) : Response<VehicleOnCampusRecords> {
+        return vehicleRakshakService.getVehicleOnCampus("Bearer $token")
+    }
 }

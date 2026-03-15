@@ -9,6 +9,7 @@ class VehicleViewModel (
     private val vehicleRepository: vehicleRepository = vehicleRepository()
 ):ViewModel() {
 
+    var campusLogs = mutableStateOf<DataForVehicleLogsInCampus?>(null)
     var vehicleList = mutableStateOf<List<VehicleData>?>(null)
     var errorMessage = mutableStateOf<String?>(null)
     var toastMessage = mutableStateOf<String?>(null)
@@ -103,6 +104,20 @@ class VehicleViewModel (
                     getAllVehiclesDetails(token)
                 } else {
                     errorMessage.value = "Update failed: ${response.code()}"
+                }
+            } catch (e: Exception) {
+                errorMessage.value = e.message ?: "An error occurred during update"
+            }
+        }
+    }
+    fun getCampusVehicleDetails(token:String) {
+        viewModelScope.launch {
+            try {
+                val response = vehicleRepository.getVehicleOnCampus(token)
+                if (response.isSuccessful) {
+                    campusLogs.value = response.body()?.data
+                } else {
+                    errorMessage.value = "Failed to fetch campus logs: ${response.code()}"
                 }
             } catch (e: Exception) {
                 errorMessage.value = e.message ?: "An error occurred during update"

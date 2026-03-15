@@ -71,3 +71,35 @@ data class SearchVehicleResponse(
     val message : String,
     val success : Boolean
 )
+
+data class VehicleOnCampusRecords(
+    val statusCode : Int,
+    val data : DataForVehicleLogsInCampus,
+    val message : String,
+    val success : Boolean
+)
+
+data class DataForVehicleLogsInCampus(
+    val count : Int,
+    val logs : List<AllLogs>
+)
+
+data class AllLogs(
+    val id : String,
+    val vehicleNo : String,
+    val isAuthorized : Boolean,
+    val vehicleCategory : String,
+    val entryTime : String,
+    val exitTime : String?=null,
+    val camera :CameraLog,
+    val vehicle :VehicleLog
+)
+
+data class CameraLog(
+    val cameraLocation : String
+)
+
+data class VehicleLog(
+    val name : String,
+    val dept : String,
+)

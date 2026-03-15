@@ -31,6 +31,8 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -43,36 +45,45 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import eu.ekansh.rakshakdtu.data.TokenManager
 import kotlinx.coroutines.launch
 
 @Composable
-fun DashBoardScreen(navController: NavHostController? = null) {
+fun DashBoardScreen(vehicleViewModel: VehicleViewModel = viewModel(),
+                    cameraViewModel: CameraViewModel = viewModel(),
+                    navController: NavHostController? = null)
+{
 
-    val sampleData = listOf(
-        ScanActivity(
-            "DL11SK5193",
-            "Main Gate — South Campus",
-            "26/2/2026, 10:07:29 am",
-            null,
-            false
-        ),
-        ScanActivity(
-            "DL11SK5193",
-            "Faculty Parking Bay",
-            "26/2/2026, 8:33:34 am",
-            "1m",
-            false
-        ),
-        ScanActivity(
-            "DL11SK5193",
-            "Hostel Gate",
-            "26/2/2026, 7:34:48 am",
-            null,
-            false
-        )
-    )
+
+    val context = LocalContext.current
+    val tokenManager = remember { TokenManager(context) }
+
+    // Fetch data when the screen loads
+    LaunchedEffect(Unit) {
+        val token = tokenManager.getToken()
+
+        if (token!!.isNotEmpty()) {
+            vehicleViewModel.getCampusVehicleDetails(token)
+            vehicleViewModel.getAllVehiclesDetails(token)
+            cameraViewModel.getAllCameraDetails(token)
+        }
+    }
+
+    val campusData = vehicleViewModel.campusLogs.value
+    val allVehicles = vehicleViewModel.vehicleList.value
+    val cameras = cameraViewModel.cameraList.value
+
+
+
+    val vehiclesOnCampusCount = campusData?.count ?: 0
+    val totalRegistered = allVehicles?.size ?: 0
+    val activeCamerasCount = cameras?.size ?: 0
+
+    // Filtering unauthorized from the active logs
+    val unauthorizedToday = campusData?.logs?.count { !it.isAuthorized } ?: 0
+    val authorizedToday = vehiclesOnCampusCount - unauthorizedToday
 
     LazyColumn(
         modifier = Modifier
@@ -85,7 +96,7 @@ fun DashBoardScreen(navController: NavHostController? = null) {
         item {
             DashboardStatCard(
                 title = "Registered Vehicles",
-                value = "10",
+                value = totalRegistered.toString(),
                 icon = Icons.Default.DirectionsCar,
                 iconColor = Color(0xFF2E7D32),
                 backgroundColor = Color(0xFFE8F5E9)
@@ -95,7 +106,7 @@ fun DashBoardScreen(navController: NavHostController? = null) {
         item {
             DashboardStatCard(
                 title = "Active Cameras",
-                value = "11",
+                value = activeCamerasCount.toString(),
                 icon = Icons.Default.Videocam,
                 iconColor = Color(0xFF1565C0),
                 backgroundColor = Color(0xFFE3F2FD)
@@ -105,7 +116,7 @@ fun DashBoardScreen(navController: NavHostController? = null) {
         item {
             DashboardStatCard(
                 title = "Vehicles on Campus",
-                value = "2",
+                value = vehiclesOnCampusCount.toString(),
                 icon = Icons.Default.ListAlt,
                 iconColor = Color(0xFFEF6C00),
                 backgroundColor = Color(0xFFFFF3E0)
@@ -115,7 +126,7 @@ fun DashBoardScreen(navController: NavHostController? = null) {
         item {
             DashboardStatCard(
                 title = "Unauthorized Today",
-                value = "3",
+                value = unauthorizedToday.toString(),
                 icon = Icons.Default.Warning,
                 iconColor = Color(0xFFC62828),
                 backgroundColor = Color(0xFFFFEBEE)
@@ -128,13 +139,24 @@ fun DashBoardScreen(navController: NavHostController? = null) {
 
         item {
             AuthorizationDonutChart(
-                authorized = 6f,
-                unauthorized = 10f
+                authorized = authorizedToday.toFloat(),
+                unauthorized = unauthorizedToday.toFloat()
             )
         }
 
         item {
-            RecentScanActivityCard(sampleData)
+
+            val recentScans = campusData?.logs?.take(5)?.map { log ->
+                ScanActivity(
+                    vehicleNo = log.vehicleNo,
+                    camera = log.camera.cameraLocation,
+                    entryTime = log.entryTime, // You might need a formatter here
+                    duration = null,
+                    authorized = !log.isAuthorized
+                )
+            } ?: emptyList()
+
+            RecentScanActivityCard(recentScans)
         }
     }
 }

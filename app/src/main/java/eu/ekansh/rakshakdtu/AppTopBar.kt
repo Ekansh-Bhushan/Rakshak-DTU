@@ -33,6 +33,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -46,6 +47,8 @@ fun AppBarView(navController: NavHostController) {
     val drawerState = rememberDrawerState(DrawerValue.Closed)
     val scope = rememberCoroutineScope()
     val localnavController = rememberNavController()
+    val vehicleViewModel: VehicleViewModel = viewModel()
+    val cameraViewModel: CameraViewModel = viewModel()
 
     ModalNavigationDrawer(
         drawerState = drawerState,
@@ -94,7 +97,8 @@ fun AppBarView(navController: NavHostController) {
             ) {
 
                 composable(Screen.DashboardScreen.route) {
-                    DashBoardScreen(navController)
+                    DashBoardScreen(vehicleViewModel = vehicleViewModel,
+                        cameraViewModel = cameraViewModel,navController)
                 }
 
                 composable(Screen.CameraScreen.route) {
