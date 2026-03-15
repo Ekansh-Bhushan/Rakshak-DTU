@@ -27,13 +27,13 @@ interface CameraAPIServices{
     ) : Response<AllCameraGetData>
 
 
-    @DELETE("vehicles/{id}")
+    @DELETE("cameras/{id}")
     suspend fun deleteACamera(
         @Header("Authorization") accessToken : String,
         @Path("id") id: String
     ) : Response<DeleteCameraResponse>
 
-    @PUT("vehicles/{id}")
+    @PUT("cameras/{id}")
     suspend fun editACamera(
         @Header("Authorization") accessToken : String,
         @Path("id") id: String,

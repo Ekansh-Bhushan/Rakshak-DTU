@@ -113,7 +113,7 @@ fun CameraScreen(viewModel: CameraViewModel = viewModel(), navController: NavHos
                 )
             ) {
 
-                ImportCameraDialog(token = storedToken ?: "",onClose = { showRegisterForm = false })
+                RegisterCameraForm(token = storedToken ?: "",onClose = { showRegisterForm = false })
             }
         }
     }
@@ -133,7 +133,7 @@ fun CameraScreen(viewModel: CameraViewModel = viewModel(), navController: NavHos
                 )
             ) {
 
-                ImportVehiclesDialog(onClose = { showImportExcelForm = false })
+                ImportCameraDialog(onClose = { showImportExcelForm = false })
             }
         }
     }

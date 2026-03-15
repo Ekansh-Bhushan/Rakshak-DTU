@@ -139,7 +139,6 @@ fun RegisterCameraForm(token : String,viewModel: CameraViewModel = viewModel(), 
 
 @Composable
 fun ImportCameraDialog(
-    token : String,
     onClose: () -> Unit
 ) {
     val context = LocalContext.current

@@ -13,4 +13,6 @@ sealed class Screen(val route:String) {
     object VehicleScreen : Screen("vehicleScreen")
 
     object LogScreen : Screen("logScreen")
+
+    object SplashScreen : Screen("splashScreen")
 }
