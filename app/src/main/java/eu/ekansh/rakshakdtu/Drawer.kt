@@ -17,36 +17,29 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.currentBackStackEntryAsState
-import eu.ekansh.rakshakdtu.data.TokenManager
 import kotlinx.coroutines.launch
 
 @Composable
 fun AppDrawer(
-    navController: NavHostController,
+    navController: NavHostController,          // local (inner) nav — for tab switching
+    rootNavController: NavHostController,      // ✅ outer nav — for sign out → LoginScreen
     onCloseDrawer: () -> Unit,
     onItemClick: (String) -> Unit = {},
 ) {
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
 
-    val context      = LocalContext.current
-    val tokenManager = TokenManager(context)
-    val scope        = rememberCoroutineScope()
+    val authViewModel: AuthViewModel = viewModel()
+    val scope = rememberCoroutineScope()
 
-    // ── Read stored email ──────────────────────────────────────────────────
-    var userEmail by remember { mutableStateOf<String?>(null) }
-    LaunchedEffect(Unit) {
-        userEmail = tokenManager.getEmail()
-    }
-
-    // Derive display name and avatar letter from email
+    val userEmail    = authViewModel.storedEmail.value
     val displayName  = userEmail?.substringBefore("@") ?: "Admin"
     val avatarLetter = displayName.first().uppercaseChar().toString()
 
@@ -62,7 +55,7 @@ fun AppDrawer(
             modifier = Modifier.padding(top = 20.dp, bottom = 20.dp)
         ) {
             androidx.compose.foundation.Image(
-                painter = painterResource(R.drawable.logo_dtu),
+                painter = painterResource(R.drawable.rakshak_logo),
                 contentDescription = "logo",
                 modifier = Modifier.size(40.dp)
             )
@@ -75,12 +68,14 @@ fun AppDrawer(
 
         Text("MAIN", color = Color.Gray, fontSize = 12.sp, modifier = Modifier.padding(vertical = 12.dp))
 
-        // ── Nav items ─────────────────────────────────────────────────────
+        // ── Nav items (use inner navController) ───────────────────────────
         DrawerItem(
             icon = Icons.Default.Dashboard, title = "Dashboard",
             selected = currentRoute == Screen.DashboardScreen.route,
             onClick = {
-                navController.navigate(Screen.DashboardScreen.route) { popUpTo(Screen.DashboardScreen.route); launchSingleTop = true }
+                navController.navigate(Screen.DashboardScreen.route) {
+                    popUpTo(Screen.DashboardScreen.route); launchSingleTop = true
+                }
                 onCloseDrawer()
             }
         )
@@ -88,7 +83,9 @@ fun AppDrawer(
             icon = Icons.Default.DirectionsCar, title = "Vehicles",
             selected = currentRoute == Screen.VehicleScreen.route,
             onClick = {
-                navController.navigate(Screen.VehicleScreen.route) { popUpTo(Screen.DashboardScreen.route); launchSingleTop = true }
+                navController.navigate(Screen.VehicleScreen.route) {
+                    popUpTo(Screen.DashboardScreen.route); launchSingleTop = true
+                }
                 onCloseDrawer()
             }
         )
@@ -96,7 +93,9 @@ fun AppDrawer(
             icon = Icons.Default.Videocam, title = "Cameras",
             selected = currentRoute == Screen.CameraScreen.route,
             onClick = {
-                navController.navigate(Screen.CameraScreen.route) { popUpTo(Screen.DashboardScreen.route); launchSingleTop = true }
+                navController.navigate(Screen.CameraScreen.route) {
+                    popUpTo(Screen.DashboardScreen.route); launchSingleTop = true
+                }
                 onCloseDrawer()
             }
         )
@@ -104,7 +103,9 @@ fun AppDrawer(
             icon = Icons.Default.ListAlt, title = "Entry/Exit Logs",
             selected = currentRoute == Screen.LogScreen.route,
             onClick = {
-                navController.navigate(Screen.LogScreen.route) { popUpTo(Screen.DashboardScreen.route); launchSingleTop = true }
+                navController.navigate(Screen.LogScreen.route) {
+                    popUpTo(Screen.DashboardScreen.route); launchSingleTop = true
+                }
                 onCloseDrawer()
             }
         )
@@ -113,7 +114,6 @@ fun AppDrawer(
 
         // ── User section ──────────────────────────────────────────────────
         Row(verticalAlignment = Alignment.CenterVertically) {
-            // Avatar circle with first letter of email
             Box(
                 modifier = Modifier
                     .size(38.dp)
@@ -124,14 +124,8 @@ fun AppDrawer(
             }
             Spacer(Modifier.width(10.dp))
             Column {
-                // Username = part before @
                 Text(displayName, color = Color.White, fontWeight = FontWeight.Medium)
-                Text(
-                    userEmail ?: "DTU Campus",
-                    color = Color.Gray,
-                    fontSize = 11.sp,
-                    maxLines = 1
-                )
+                Text(userEmail ?: "DTU Campus", color = Color.Gray, fontSize = 11.sp, maxLines = 1)
             }
         }
 
@@ -141,8 +135,12 @@ fun AppDrawer(
         OutlinedButton(
             onClick = {
                 scope.launch {
-                    tokenManager.clearAll()
-                    navController.navigate(Screen.LoginScreen.route) { popUpTo(0) }
+                    // ✅ await signOut() fully (clears token + email) before navigating
+                    authViewModel.signOut()
+                    // ✅ use rootNavController — LoginScreen lives on the outer graph
+                    rootNavController.navigate(Screen.LoginScreen.route) {
+                        popUpTo(0) { inclusive = true }
+                    }
                 }
             },
             border = BorderStroke(1.dp, Color.Red),

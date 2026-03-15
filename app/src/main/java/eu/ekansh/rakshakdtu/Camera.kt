@@ -1,49 +1,31 @@
 package eu.ekansh.rakshakdtu
 
 import android.widget.Toast
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
 import androidx.compose.foundation.horizontalScroll
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.RowScope
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.Divider
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Upload
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -51,14 +33,18 @@ import androidx.navigation.NavHostController
 import eu.ekansh.rakshakdtu.data.TokenManager
 
 @Composable
-fun CameraScreen(viewModel: CameraViewModel = viewModel(), navController: NavHostController){
-    val cameras by viewModel.cameraList
+fun CameraScreen(
+    viewModel: CameraViewModel = viewModel(),
+    navController: NavHostController
+) {
+    val cameras      by viewModel.cameraList
     val errorMessage by viewModel.errorMessage
     val toastMessage by viewModel.toastMessage
 
-    val context = LocalContext.current
+    val context      = LocalContext.current
     val tokenManager = remember { TokenManager(context) }
-    var storedToken by remember { mutableStateOf<String?>(null) }
+    var storedToken  by remember { mutableStateOf<String?>(null) }
+    var searchQuery  by remember { mutableStateOf("") }
 
     LaunchedEffect(toastMessage) {
         toastMessage?.let {
@@ -67,7 +53,7 @@ fun CameraScreen(viewModel: CameraViewModel = viewModel(), navController: NavHos
         }
     }
 
-    LaunchedEffect(Unit){
+    LaunchedEffect(Unit) {
         val token = tokenManager.getToken()
         if (token != null) {
             storedToken = token
@@ -78,187 +64,290 @@ fun CameraScreen(viewModel: CameraViewModel = viewModel(), navController: NavHos
         }
     }
 
-    val totalCameraCount =  cameras?.size ?: 0
-    var showRegisterForm by remember { mutableStateOf(false) }
-    var showImportExcelForm by remember {
-        mutableStateOf(false)
+    val totalCameraCount              = cameras?.size ?: 0
+    var showRegisterForm              by remember { mutableStateOf(false) }
+    var showImportExcelForm           by remember { mutableStateOf(false) }
+    var cameraToEdit: CameraData?     by remember { mutableStateOf(null) }
+
+    // Filtered list driven by search query (client-side, same pattern as VehicleScreen)
+    val displayedCameras = remember(cameras, searchQuery) {
+        val list = cameras ?: emptyList()
+        if (searchQuery.isBlank()) list
+        else list.filter {
+            it.cameraLocation.contains(searchQuery, ignoreCase = true) ||
+                    it.cameraType.contains(searchQuery, ignoreCase = true) ||
+                    it.id.contains(searchQuery, ignoreCase = true)
+        }
     }
 
-    var cameraToEdit by remember { mutableStateOf<CameraData?>(null) }
-
-    if (cameraToEdit != null) {
+    // ── Dialogs ───────────────────────────────────────────────────────────────
+    cameraToEdit?.let { camera ->
         androidx.compose.ui.window.Dialog(onDismissRequest = { cameraToEdit = null }) {
             Card(shape = RoundedCornerShape(16.dp)) {
                 EditCameraForm(
-                    token = storedToken ?: "",
-                    camera = cameraToEdit!!,
+                    token     = storedToken ?: "",
+                    camera    = camera,
                     viewModel = viewModel,
-                    onClose = { cameraToEdit = null }
+                    onClose   = { cameraToEdit = null }
                 )
             }
         }
     }
 
     if (showRegisterForm) {
-
-        androidx.compose.ui.window.Dialog(
-            onDismissRequest = { showRegisterForm = false }
-        ) {
-
+        androidx.compose.ui.window.Dialog(onDismissRequest = { showRegisterForm = false }) {
             Card(
                 modifier = Modifier.width(420.dp),
-                shape = RoundedCornerShape(16.dp),
-                colors = CardDefaults.cardColors(
-                    containerColor = Color.White
-                )
+                shape    = RoundedCornerShape(16.dp),
+                colors   = CardDefaults.cardColors(containerColor = Color.White)
             ) {
-
-                RegisterCameraForm(token = storedToken ?: "",onClose = { showRegisterForm = false })
+                RegisterCameraForm(token = storedToken ?: "", onClose = { showRegisterForm = false })
             }
         }
     }
 
-
     if (showImportExcelForm) {
-
-        androidx.compose.ui.window.Dialog(
-            onDismissRequest = { showImportExcelForm = false }
-        ) {
-
+        androidx.compose.ui.window.Dialog(onDismissRequest = { showImportExcelForm = false }) {
             Card(
                 modifier = Modifier.width(420.dp),
-                shape = RoundedCornerShape(16.dp),
-                colors = CardDefaults.cardColors(
-                    containerColor = Color.White
-                )
+                shape    = RoundedCornerShape(16.dp),
+                colors   = CardDefaults.cardColors(containerColor = Color.White)
             ) {
-
                 ImportCameraDialog(onClose = { showImportExcelForm = false })
             }
         }
     }
 
+    // ── Screen body ───────────────────────────────────────────────────────────
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(18.dp)
-            .background(colorResource(id = R.color.background_color))
+            .background(Color(0xFFF6F8FA))
+            .padding(16.dp)
     ) {
-        Text(text = "Campus Camera",
+        // Header
+        Text(
+            "Campus Cameras",
             fontWeight = FontWeight.Bold,
-            fontSize = 22.sp)
+            fontSize   = 22.sp,
+            color      = Color(0xFF1A1C1E)
+        )
+        Spacer(Modifier.height(4.dp))
+        Text(
+            "Manage CCTV camera points — $totalCameraCount installed",
+            fontSize = 13.sp,
+            color    = Color(0xFF6B7280)
+        )
 
-        Spacer(modifier = Modifier.height(8.dp))
+        Spacer(Modifier.height(16.dp))
 
-        Text(text = "Manage CCTV Camera Points — $totalCameraCount Installed",
-            fontSize = 12.sp)
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        Row {
-
-            Button(onClick = {
-                showImportExcelForm = true
-            },
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = colorResource(id = R.color.lightGreen)
-                )
+        // Action buttons
+        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            Button(
+                onClick = { showImportExcelForm = true },
+                colors  = ButtonDefaults.buttonColors(containerColor = colorResource(R.color.lightGreen)),
+                shape   = RoundedCornerShape(8.dp)
             ) {
-                Icon(imageVector = Icons.Default.Upload, contentDescription = "Upload the CSV")
-                Text(text = "Import Excel")
+                Icon(Icons.Default.Upload, contentDescription = null, modifier = Modifier.size(16.dp))
+                Spacer(Modifier.width(6.dp))
+                Text("Import Excel")
             }
-
-            Spacer(modifier = Modifier.width(8.dp))
-
-            Button(onClick = {
-                             showRegisterForm = true
-            },
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = colorResource(id = R.color.lightGreen)
-                )
+            Button(
+                onClick = { showRegisterForm = true },
+                colors  = ButtonDefaults.buttonColors(containerColor = colorResource(R.color.lightGreen)),
+                shape   = RoundedCornerShape(8.dp)
             ) {
-                Icon(imageVector = Icons.Default.Add, contentDescription = "Add the Camera")
-                Text(text = "Add Camera")
+                Icon(Icons.Default.Add, contentDescription = null, modifier = Modifier.size(16.dp))
+                Spacer(Modifier.width(6.dp))
+                Text("Add Camera")
             }
         }
 
-        Spacer(modifier = Modifier.height(8.dp))
+        Spacer(Modifier.height(16.dp))
 
-        HorizontalDivider(
-            thickness = 1.dp,
-            color = Color.Gray
-        )
+        // ── Search + table inside Card ────────────────────────────────────────
+        Card(
+            shape     = RoundedCornerShape(14.dp),
+            elevation = CardDefaults.cardElevation(2.dp),
+            colors    = CardDefaults.cardColors(containerColor = Color.White),
+            modifier  = Modifier.fillMaxWidth().weight(1f)
+        ) {
+            Column(modifier = Modifier.padding(16.dp).fillMaxSize()) {
 
-        Spacer(modifier = Modifier.height(8.dp))
+                // Search bar
+                OutlinedTextField(
+                    value         = searchQuery,
+                    onValueChange = { searchQuery = it },
+                    placeholder   = {
+                        Text(
+                            "Search by location, type, ID…",
+                            color    = Color(0xFFADB5BD),
+                            fontSize = 13.sp
+                        )
+                    },
+                    leadingIcon  = {
+                        Icon(
+                            Icons.Default.Search, null,
+                            tint     = Color(0xFFADB5BD),
+                            modifier = Modifier.size(18.dp)
+                        )
+                    },
+                    trailingIcon = {
+                        AnimatedVisibility(
+                            visible = searchQuery.isNotEmpty(),
+                            enter   = fadeIn(),
+                            exit    = fadeOut()
+                        ) {
+                            IconButton(
+                                onClick  = { searchQuery = "" },
+                                modifier = Modifier.size(18.dp)
+                            ) {
+                                Icon(Icons.Default.Close, null, tint = Color(0xFFADB5BD))
+                            }
+                        }
+                    },
+                    singleLine = true,
+                    shape      = RoundedCornerShape(10.dp),
+                    colors     = OutlinedTextFieldDefaults.colors(
+                        focusedContainerColor   = Color(0xFFF9FAFB),
+                        unfocusedContainerColor = Color(0xFFF9FAFB),
+                        focusedBorderColor      = Color(0xFF16A34A),
+                        unfocusedBorderColor    = Color(0xFFE5E7EB),
+                    ),
+                    modifier = Modifier.fillMaxWidth().height(50.dp)
+                )
 
-        CameraTable(
-            cameras = cameras ?: emptyList(),
-            onDelete = { id ->
-                storedToken?.let { viewModel.deleteACamera(it, id) }
-            },
-            onEdit = { camera ->
-                cameraToEdit = camera
-            }
-        )
-    }
-}
+                Spacer(Modifier.height(10.dp))
 
-@Composable
-fun CameraTableHeader() {
-
-    Row(
-        modifier = Modifier
-            .width(950.dp)
-            .padding(vertical = 14.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-
-        CameraHeaderText("Location",1.2f)
-        CameraHeaderText("Type",2f)
-        CameraHeaderText("Coordinates",1f)
-        CameraHeaderText("Camera ID",1f)
-        CameraHeaderText("Resgistered",1f)
-        CameraHeaderText("ACTIONS",1f)
-    }
-}
-
-@Composable
-fun RowScope.CameraHeaderText(text:String, weight:Float){
-    Text(
-        text,
-        modifier = Modifier.weight(weight),
-        color = Color.Gray,
-        fontWeight = FontWeight.SemiBold,
-        fontSize = 13.sp
-    )
-}
-
-@Composable
-fun CameraTable(
-    cameras: List<CameraData>,
-    onDelete: (String) -> Unit,
-    onEdit: (CameraData) -> Unit
-) {
-    val horizontalScrollState = rememberScrollState()
-
-    Column(modifier = Modifier.fillMaxWidth()) {
-        Column(modifier = Modifier.horizontalScroll(horizontalScrollState)) {
-            CameraTableHeader()
-            HorizontalDivider(color = Color(0xFFE0E0E0))
-
-            LazyColumn(modifier = Modifier.height(500.dp)) { // Give it a height or use weight
-                items(cameras) { camera ->
-                    CameraRow(
-                        camera = camera,
-                        onDelete = { onDelete(camera.id) },
-                        onEdit = { onEdit(camera) }
+                // Record count pill
+                Box(
+                    modifier = Modifier
+                        .background(Color(0xFFF3F4F6), RoundedCornerShape(6.dp))
+                        .padding(horizontal = 10.dp, vertical = 4.dp)
+                ) {
+                    Text(
+                        "${displayedCameras.size} Records",
+                        fontSize   = 12.sp,
+                        fontWeight = FontWeight.Medium,
+                        color      = Color(0xFF6B7280)
                     )
-                    HorizontalDivider(color = Color(0xFFEAEAEA))
+                }
+
+                Spacer(Modifier.height(10.dp))
+
+                // Table / states
+                when {
+                    errorMessage != null -> {
+                        Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                            Text("Error: $errorMessage", color = Color.Red)
+                        }
+                    }
+                    cameras == null -> {
+                        Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                            CircularProgressIndicator(color = Color(0xFF16A34A))
+                        }
+                    }
+                    else -> {
+                        CameraTable(
+                            cameras  = displayedCameras,
+                            onDelete = { id -> storedToken?.let { viewModel.deleteACamera(it, id) } },
+                            onEdit   = { cameraToEdit = it },
+                            modifier = Modifier.weight(1f)
+                        )
+                    }
                 }
             }
         }
     }
 }
+
+
+// ─────────────────────────────────────────────────────────────────────────────
+//  CAMERA TABLE
+// ─────────────────────────────────────────────────────────────────────────────
+
+@Composable
+fun CameraTable(
+    cameras: List<CameraData>,
+    onDelete: (String) -> Unit,
+    onEdit: (CameraData) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Column(modifier = modifier.fillMaxWidth()) {
+        Column(modifier = Modifier.horizontalScroll(rememberScrollState())) {
+
+            // Header
+            Row(
+                modifier = Modifier
+                    .width(950.dp)
+                    .background(Color(0xFFF9FAFB), RoundedCornerShape(topStart = 8.dp, topEnd = 8.dp))
+                    .padding(horizontal = 12.dp, vertical = 10.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                CameraHeaderText("LOCATION",   1.4f)
+                CameraHeaderText("TYPE",       1f)
+                CameraHeaderText("COORDINATES",1.6f)
+                CameraHeaderText("CAMERA ID",  1f)
+                CameraHeaderText("REGISTERED", 1f)
+                CameraHeaderText("ACTIONS",    0.8f)
+            }
+
+            HorizontalDivider(color = Color(0xFFE5E7EB))
+
+            if (cameras.isEmpty()) {
+                Box(
+                    modifier = Modifier.width(950.dp).height(200.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text("No cameras found", color = Color(0xFF9CA3AF), fontSize = 14.sp)
+                }
+            } else {
+                LazyColumn {
+                    items(cameras, key = { it.id }) { camera ->
+                        CameraRow(
+                            camera   = camera,
+                            onDelete = { onDelete(camera.id) },
+                            onEdit   = { onEdit(camera) }
+                        )
+                        HorizontalDivider(color = Color(0xFFF3F4F6))
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun RowScope.CameraHeaderText(text: String, weight: Float) {
+    Text(
+        text,
+        modifier      = Modifier.weight(weight),
+        color         = Color(0xFF6B7280),
+        fontWeight    = FontWeight.Bold,
+        fontSize      = 11.sp,
+        letterSpacing = 0.5.sp
+    )
+}
+
+@Composable
+fun CameraTableHeader() {
+    Row(
+        modifier = Modifier.width(950.dp).padding(vertical = 14.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        CameraHeaderText("LOCATION",    1.4f)
+        CameraHeaderText("TYPE",        1f)
+        CameraHeaderText("COORDINATES", 1.6f)
+        CameraHeaderText("CAMERA ID",   1f)
+        CameraHeaderText("REGISTERED",  1f)
+        CameraHeaderText("ACTIONS",     0.8f)
+    }
+}
+
+
+// ─────────────────────────────────────────────────────────────────────────────
+//  CAMERA ROW
+// ─────────────────────────────────────────────────────────────────────────────
 
 @Composable
 fun CameraRow(
@@ -267,113 +356,102 @@ fun CameraRow(
     onEdit: () -> Unit
 ) {
     Row(
-        modifier = Modifier.width(950.dp).padding(vertical = 18.dp),
+        modifier = Modifier
+            .width(950.dp)
+            .padding(horizontal = 12.dp, vertical = 14.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        // Map API data to UI
-        CameraPlate(camera.cameraLocation) // Using location as the primary ID/Plate
-        CameraChip(camera.cameraType, 1f)
-        CameraColumn(camera.lat.toString(), camera.long.toString())
-        CameraChip(camera.id.takeLast(5), 1f) // Short ID
-        CameraChip(camera.createdAt.split("T")[0], 1f) // Date only
+        // Location — dark plate style
+        Box(modifier = Modifier.weight(1.4f)) {
+            Box(
+                modifier = Modifier
+                    .background(Color(0xFF1A1C1E), RoundedCornerShape(5.dp))
+                    .padding(horizontal = 7.dp, vertical = 4.dp)
+            ) {
+                Text(
+                    camera.cameraLocation,
+                    color         = Color.White,
+                    fontWeight    = FontWeight.Bold,
+                    fontSize      = 11.sp,
+                    letterSpacing = 0.5.sp
+                )
+            }
+        }
 
-        // Action Buttons
-        Row(modifier = Modifier.weight(1f)) {
+        // Type chip
+        CameraChip(camera.cameraType, 1f)
+
+        // Coordinates
+        Column(modifier = Modifier.weight(1.6f)) {
+            Text("${camera.lat}", color = Color(0xFF374151), fontSize = 12.sp)
+            Text("${camera.long}", color = Color(0xFF9CA3AF), fontSize = 11.sp)
+        }
+
+        // Short Camera ID chip
+        CameraChip(camera.id.takeLast(8), 1f)
+
+        // Registered date
+        Text(
+            text     = camera.createdAt.split("T")[0],
+            modifier = Modifier.weight(1f),
+            fontSize = 12.sp,
+            color    = Color(0xFF374151)
+        )
+
+        // Actions
+        Row(modifier = Modifier.weight(0.8f)) {
             IconButton(onClick = onEdit) {
-                Icon(Icons.Default.Edit, contentDescription = "Edit")
+                Icon(Icons.Default.Edit, contentDescription = "Edit", tint = Color(0xFF6B7280))
             }
             IconButton(onClick = onDelete) {
-                Icon(Icons.Default.Delete, contentDescription = "Delete", tint = Color.Red)
+                Icon(Icons.Default.Delete, contentDescription = "Delete", tint = Color(0xFFDC2626))
             }
         }
     }
 }
-@Composable
-fun RowScope.CameraPlate(number:String){
 
-    Box(
-        modifier = Modifier
-            .weight(1.2f)
-    ){
+@Composable
+fun RowScope.CameraPlate(number: String) {
+    Box(modifier = Modifier.weight(1.2f)) {
         Box(
             modifier = Modifier
-                .background(Color(0xFF1F2235), RoundedCornerShape(8.dp))
-                .padding(horizontal = 14.dp, vertical = 8.dp)
-        ){
-            Text(
-                number,
-                color = Color.White,
-                fontWeight = FontWeight.Bold
-            )
+                .background(Color(0xFF1A1C1E), RoundedCornerShape(5.dp))
+                .padding(horizontal = 7.dp, vertical = 4.dp)
+        ) {
+            Text(number, color = Color.White, fontWeight = FontWeight.Bold, fontSize = 11.sp, letterSpacing = 0.5.sp)
         }
     }
 }
 
 @Composable
-fun RowScope.CameraColumn(lat:String,long:String){
-
-    Column(
-        modifier = Modifier.weight(2f)
-    ){
-
-        Text(
-            lat,
-            color = Color.Gray,
-            fontSize = 13.sp
-        )
-
-        Text(
-            long,
-            color = Color.Gray,
-            fontSize = 13.sp
-        )
+fun RowScope.CameraColumn(lat: String, long: String) {
+    Column(modifier = Modifier.weight(2f)) {
+        Text(lat,  color = Color(0xFF374151), fontSize = 12.sp)
+        Text(long, color = Color(0xFF9CA3AF), fontSize = 11.sp)
     }
 }
 
 @Composable
-fun RowScope.CameraChip(text:String, weight:Float){
-
-    Box(
-        modifier = Modifier.weight(weight)
-    ){
-
+fun RowScope.CameraChip(text: String, weight: Float) {
+    Box(modifier = Modifier.weight(weight)) {
         Box(
             modifier = Modifier
                 .background(Color(0xFFE6EEF6), RoundedCornerShape(20.dp))
-                .padding(horizontal = 14.dp, vertical = 6.dp)
-        ){
-            Text(
-                text,
-                color = Color(0xFF3A7BBF),
-                fontWeight = FontWeight.SemiBold
-            )
+                .padding(horizontal = 10.dp, vertical = 4.dp)
+        ) {
+            Text(text, color = Color(0xFF3A7BBF), fontWeight = FontWeight.SemiBold, fontSize = 11.sp)
         }
     }
 }
 
 @Composable
-fun RowScope.CameraActionButtons(){
-
-    Row(
-        modifier = Modifier.weight(1f)
-    ){
-
+fun RowScope.CameraActionButtons() {
+    Row(modifier = Modifier.weight(1f)) {
         IconButton(onClick = {}) {
-            Icon(Icons.Default.Edit, contentDescription = null)
+            Icon(Icons.Default.Edit, contentDescription = null, tint = Color(0xFF6B7280))
         }
-
         IconButton(onClick = {}) {
-            Icon(
-                Icons.Default.Delete,
-                contentDescription = null,
-                tint = Color.Red
-            )
+            Icon(Icons.Default.Delete, contentDescription = null, tint = Color(0xFFDC2626))
         }
     }
-}
-
-@Preview(showBackground = true)
-@Composable
-fun CameraScreenPreview() {
-//    CameraScreen()
 }

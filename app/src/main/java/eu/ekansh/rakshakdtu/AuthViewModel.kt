@@ -13,18 +13,19 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
 
     private val tokenManager = TokenManager(application)
 
-    var email         = mutableStateOf("")
-    var password      = mutableStateOf("")
-    var otpSent       = mutableStateOf(false)
-    var accessToken   = mutableStateOf<String?>(null)
-    var errorMessage  = mutableStateOf<String?>(null)
-    var isLoading     = mutableStateOf(false)   // ✅ loading state
+    var email        = mutableStateOf("")
+    var password     = mutableStateOf("")
+    var otpSent      = mutableStateOf(false)
+    var accessToken  = mutableStateOf<String?>(null)
+    var errorMessage = mutableStateOf<String?>(null)
+    var isLoading    = mutableStateOf(false)
 
-    // One-shot toast events the UI collects
     private val _toastEvent = MutableSharedFlow<String>()
     val toastEvent = _toastEvent.asSharedFlow()
 
-    // ── Stored email (persisted so drawer can read it) ─────────────────────
+    // ✅ storedEmail is the single source of truth for the drawer.
+    //    Set immediately on successful OTP verify (in-memory, instant).
+    //    Also loaded from DataStore on cold start via init{}.
     var storedEmail = mutableStateOf<String?>(null)
         private set
 
@@ -70,7 +71,7 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
                     token?.let {
                         tokenManager.saveToken(it)
                         tokenManager.saveEmail(email)
-                        storedEmail.value = email
+                        storedEmail.value = email   // ✅ instant in-memory update
                     }
                     _toastEvent.emit("Account verified! Welcome 🎉")
                 } else {
@@ -118,7 +119,7 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
                     token?.let {
                         tokenManager.saveToken(it)
                         tokenManager.saveEmail(email)
-                        storedEmail.value = email
+                        storedEmail.value = email   // ✅ instant in-memory update
                     }
                     _toastEvent.emit("Welcome back! ✓")
                 } else {
@@ -130,6 +131,18 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
                 isLoading.value = false
             }
         }
+    }
+
+    // ── SIGN OUT ──────────────────────────────────────────────────────────
+    // suspend so the drawer's scope.launch{} awaits clearAll() before navigating
+    suspend fun signOut() {
+        tokenManager.clearAll()        // waits for DataStore write to complete
+        storedEmail.value  = null
+        accessToken.value  = null
+        email.value        = ""
+        password.value     = ""
+        otpSent.value      = false
+        errorMessage.value = null
     }
 
     fun clearError() { errorMessage.value = null }

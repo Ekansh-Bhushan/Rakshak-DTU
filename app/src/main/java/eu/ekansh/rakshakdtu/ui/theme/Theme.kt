@@ -57,8 +57,14 @@ fun RakshakDTUTheme(
     if (!view.isInEditMode) {
         SideEffect {
             val window = (view.context as Activity).window
-            window.statusBarColor = colorScheme.primary.toArgb()
-            WindowCompat.getInsetsController(window, view).isAppearanceLightStatusBars = darkTheme
+
+            // 1. Force the color to Black instead of colorScheme.primary
+            window.statusBarColor = android.graphics.Color.BLACK
+
+            // 2. Control icon brightness
+            // false = White icons (for your black bar)
+            // true = Dark icons (for light bars)
+            WindowCompat.getInsetsController(window, view).isAppearanceLightStatusBars = false
         }
     }
 
