@@ -8,6 +8,7 @@ import retrofit2.http.Header
 import retrofit2.http.POST
 import retrofit2.http.PUT
 import retrofit2.http.Path
+import retrofit2.http.Query
 
 
 val vehicleRakshakService: VehicleAPIServices = AllAPIClient.vehicleApiService
@@ -22,6 +23,7 @@ interface VehicleAPIServices {
     @GET("vehicles")
     suspend fun getAllVehicles(
         @Header("Authorization") accessToken : String,
+        @Query("search") query: String? = null
     ) : Response<AllVehicleGetData>
 
     @DELETE("vehicles/{vehicleNo}")
@@ -36,4 +38,5 @@ interface VehicleAPIServices {
         @Path("vehicleNo") vehicleNo: String,
         @Body request: VehicleUpdateRequest
     ) : Response<Unit>
+
 }

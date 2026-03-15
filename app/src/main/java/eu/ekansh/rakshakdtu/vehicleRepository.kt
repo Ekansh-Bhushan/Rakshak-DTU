@@ -4,8 +4,8 @@ import retrofit2.Response
 
 class vehicleRepository {
 
-    suspend fun getAllVehicles(token: String) : Response<AllVehicleGetData>{
-        return vehicleRakshakService.getAllVehicles(accessToken = "Bearer $token")
+    suspend fun getAllVehicles(token: String,search: String? = null) : Response<AllVehicleGetData>{
+        return vehicleRakshakService.getAllVehicles(accessToken = "Bearer $token",query = search)
     }
 
     suspend fun addAVehicle(
@@ -37,4 +37,5 @@ class vehicleRepository {
     ): Response<Unit> {
         return vehicleRakshakService.editAVehicle("Bearer $token", vehicleNo, request)
     }
+
 }

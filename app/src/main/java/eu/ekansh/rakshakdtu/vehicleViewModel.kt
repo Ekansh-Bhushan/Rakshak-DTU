@@ -13,6 +13,27 @@ class VehicleViewModel (
     var errorMessage = mutableStateOf<String?>(null)
     var toastMessage = mutableStateOf<String?>(null)
 
+    private var searchJob: kotlinx.coroutines.Job? = null
+
+    fun onSearchQueryChanged(token: String, query: String) {
+        searchJob?.cancel() // Cancel the previous search if user is still typing
+        searchJob = viewModelScope.launch {
+            if (query.isNotEmpty()) {
+                kotlinx.coroutines.delay(500) // Wait for 500ms
+            }
+
+            try {
+                // If query is empty, it sends null which fetches all vehicles
+                val response = vehicleRepository.getAllVehicles(token, query.ifEmpty { null })
+                if (response.isSuccessful) {
+                    vehicleList.value = response.body()?.data?.vehicles
+                }
+            } catch (e: Exception) {
+                errorMessage.value = e.message
+            }
+        }
+    }
+
     fun getAllVehiclesDetails(accessToken: String){
         viewModelScope.launch {
             try {

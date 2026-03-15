@@ -287,7 +287,7 @@ fun MobileInput(mobileNo: String, onMobileChange: (String) -> Unit) {
 
             OutlinedTextField(
                 value = mobileNo,
-                onValueChange = { onMobileChange },
+                onValueChange = onMobileChange,
                 modifier = Modifier.weight(1f),
                 placeholder = { Text("9876543269") },
                 shape = RoundedCornerShape(10.dp),
@@ -320,8 +320,8 @@ fun DateField(dateOfIssue: String, onDateChange: (String) -> Unit) {
         OutlinedTextField(
             value = dateOfIssue,
             onValueChange = { /* Read only, changed via picker */ },
-            readOnly = true, // Prevent manual typing to avoid format errors
-            placeholder = { Text("yyyy-mm-dd") },
+            readOnly = true,
+            placeholder = { Text("YYYY-MM-DD") },
             trailingIcon = {
                 IconButton(onClick = { showDatePicker = true }) {
                     Icon(Icons.Default.DateRange, contentDescription = null)
@@ -339,7 +339,6 @@ fun DateField(dateOfIssue: String, onDateChange: (String) -> Unit) {
                 confirmButton = {
                     TextButton(onClick = {
                         datePickerState.selectedDateMillis?.let { millis ->
-                            // Format the date to yyyy-MM-dd
                             val formatter = java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.getDefault())
                             val dateString = formatter.format(java.util.Date(millis))
                             onDateChange(dateString)

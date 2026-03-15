@@ -20,6 +20,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Divider
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Search
@@ -64,6 +65,7 @@ fun VehicleScreen(viewModel: VehicleViewModel = viewModel(),navController: NavHo
     val context = LocalContext.current
     val tokenManager = remember { TokenManager(context) }
     var storedToken by remember { mutableStateOf<String?>(null) }
+    var searchQuery by remember { mutableStateOf("") }
 
     LaunchedEffect(toastMessage) {
         toastMessage?.let {
@@ -192,7 +194,15 @@ fun VehicleScreen(viewModel: VehicleViewModel = viewModel(),navController: NavHo
 
         Spacer(modifier = Modifier.height(8.dp))
 
-        SearchBar()
+        SearchBar(
+            query = searchQuery,
+            onQueryChange = { newText ->
+                searchQuery = newText
+                storedToken?.let { token ->
+                    viewModel.onSearchQueryChanged(token, newText)
+                }
+            }
+        )
         Spacer(modifier = Modifier.height(8.dp))
         Text(text = "$totalVehicleCount Records")
 
@@ -216,13 +226,13 @@ fun VehicleScreen(viewModel: VehicleViewModel = viewModel(),navController: NavHo
 }
 
 @Composable
-fun SearchBar() {
+fun SearchBar(query: String, onQueryChange: (String) -> Unit) {
 
     var search by remember { mutableStateOf("") }
 
     OutlinedTextField(
-        value = search,
-        onValueChange = { search = it },
+        value = query,
+        onValueChange = onQueryChange,
         placeholder = {
             Text(
                 "Search by plate, name, dept...",
@@ -235,6 +245,13 @@ fun SearchBar() {
                 contentDescription = "Search",
                 tint = Color(0xFF9E9E9E)
             )
+        },
+        trailingIcon = {
+            if (query.isNotEmpty()) {
+                IconButton(onClick = { onQueryChange("") }) {
+                    Icon(imageVector = Icons.Default.Close , contentDescription = "Clear")
+                }
+            }
         },
         singleLine = true,
         shape = RoundedCornerShape(28.dp),

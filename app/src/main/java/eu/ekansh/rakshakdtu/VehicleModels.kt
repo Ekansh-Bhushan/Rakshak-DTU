@@ -64,3 +64,10 @@ data class VehicleUpdateRequest(
     val mobileNo: String? = null,
     val dateOfIssue: String? = null
 )
+
+data class SearchVehicleResponse(
+    val statusCode : Int,
+    val data : VehicleData,
+    val message : String,
+    val success : Boolean
+)
