@@ -61,6 +61,8 @@ android {
 
 dependencies {
 
+    implementation("androidx.activity:activity-ktx:1.10.0")
+
     //Graph
     implementation("com.patrykandpatrick.vico:compose:1.13.1")
     implementation("com.patrykandpatrick.vico:compose-m3:1.13.1")

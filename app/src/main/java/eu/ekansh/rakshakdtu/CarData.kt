@@ -121,7 +121,7 @@ fun RecentScanActivityCard(activities: List<ScanActivity>) {
                 )
 
                 Text(
-                    "View all →",
+                    "",
                     color = Color(0xFF2E7D32),
                     fontSize = 14.sp
                 )
