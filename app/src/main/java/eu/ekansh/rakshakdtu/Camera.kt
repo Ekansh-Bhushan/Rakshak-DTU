@@ -1,5 +1,6 @@
 package eu.ekansh.rakshakdtu
 
+import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Box
@@ -24,24 +25,118 @@ import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Upload
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavHostController
+import eu.ekansh.rakshakdtu.data.TokenManager
 
 @Composable
-fun CameraScreen(){
+fun CameraScreen(viewModel: CameraViewModel = viewModel(), navController: NavHostController){
+    val cameras by viewModel.cameraList
+    val errorMessage by viewModel.errorMessage
+    val toastMessage by viewModel.toastMessage
 
-    val totalCameraCount = 12
+    val context = LocalContext.current
+    val tokenManager = remember { TokenManager(context) }
+    var storedToken by remember { mutableStateOf<String?>(null) }
+
+    LaunchedEffect(toastMessage) {
+        toastMessage?.let {
+            Toast.makeText(context, it, Toast.LENGTH_SHORT).show()
+            viewModel.toastMessage.value = null
+        }
+    }
+
+    LaunchedEffect(Unit){
+        val token = tokenManager.getToken()
+        if (token != null) {
+            storedToken = token
+            viewModel.getAllCameraDetails(token)
+        } else {
+            viewModel.errorMessage.value = "No session found. Please login."
+            navController.navigate(Screen.LoginScreen.route)
+        }
+    }
+
+    val totalCameraCount =  cameras?.size ?: 0
+    var showRegisterForm by remember { mutableStateOf(false) }
+    var showImportExcelForm by remember {
+        mutableStateOf(false)
+    }
+
+    var cameraToEdit by remember { mutableStateOf<CameraData?>(null) }
+
+    if (cameraToEdit != null) {
+        androidx.compose.ui.window.Dialog(onDismissRequest = { cameraToEdit = null }) {
+            Card(shape = RoundedCornerShape(16.dp)) {
+                EditCameraForm(
+                    token = storedToken ?: "",
+                    camera = cameraToEdit!!,
+                    viewModel = viewModel,
+                    onClose = { cameraToEdit = null }
+                )
+            }
+        }
+    }
+
+    if (showRegisterForm) {
+
+        androidx.compose.ui.window.Dialog(
+            onDismissRequest = { showRegisterForm = false }
+        ) {
+
+            Card(
+                modifier = Modifier.width(420.dp),
+                shape = RoundedCornerShape(16.dp),
+                colors = CardDefaults.cardColors(
+                    containerColor = Color.White
+                )
+            ) {
+
+                ImportCameraDialog(token = storedToken ?: "",onClose = { showRegisterForm = false })
+            }
+        }
+    }
+
+
+    if (showImportExcelForm) {
+
+        androidx.compose.ui.window.Dialog(
+            onDismissRequest = { showImportExcelForm = false }
+        ) {
+
+            Card(
+                modifier = Modifier.width(420.dp),
+                shape = RoundedCornerShape(16.dp),
+                colors = CardDefaults.cardColors(
+                    containerColor = Color.White
+                )
+            ) {
+
+                ImportVehiclesDialog(onClose = { showImportExcelForm = false })
+            }
+        }
+    }
 
     Column(
         modifier = Modifier
@@ -62,7 +157,9 @@ fun CameraScreen(){
 
         Row {
 
-            Button(onClick = { /*TODO*/ },
+            Button(onClick = {
+                showImportExcelForm = true
+            },
                 colors = ButtonDefaults.buttonColors(
                     containerColor = colorResource(id = R.color.lightGreen)
                 )
@@ -73,7 +170,9 @@ fun CameraScreen(){
 
             Spacer(modifier = Modifier.width(8.dp))
 
-            Button(onClick = { /*TODO*/ },
+            Button(onClick = {
+                             showRegisterForm = true
+            },
                 colors = ButtonDefaults.buttonColors(
                     containerColor = colorResource(id = R.color.lightGreen)
                 )
@@ -92,48 +191,18 @@ fun CameraScreen(){
 
         Spacer(modifier = Modifier.height(8.dp))
 
-        CameraTable()
-    }
-}
-
-@Composable
-fun CameraTable() {
-
-    val Cameras = listOf(
-        Camera("DL3CAF0001","Ravi Kumar","22.1223","77.23432","2W","STK-001"),
-        Camera("HR26DK5678","Priya Singh","S/o Mohan Singh","MBA","4W","STK-002"),
-        Camera("UP32EF1234","Amit Sharma","S/o Rajesh Sharma","CSE","2W","STK-003"),
-        Camera("DL8CAB9900","Neha Gupta","S/o Vikas Gupta","ME","Electric","STK-004"),
-        Camera("DL1PB3344","Suresh Yadav","S/o Ram Yadav","Civil","Heavy","STK-005"),
-    )
-
-    val horizontalScrollState = rememberScrollState()
-
-    Column(
-        modifier = Modifier.fillMaxWidth()
-    ) {
-
-        Column(
-            modifier = Modifier
-                .horizontalScroll(horizontalScrollState)
-        ) {
-
-            CameraTableHeader()
-
-            Divider(color = Color(0xFFE0E0E0))
-
-            LazyColumn {
-
-                items(Cameras) {
-
-                    CameraRow(it)
-
-                    Divider(color = Color(0xFFEAEAEA))
-                }
+        CameraTable(
+            cameras = cameras ?: emptyList(),
+            onDelete = { id ->
+                storedToken?.let { viewModel.deleteACamera(it, id) }
+            },
+            onEdit = { camera ->
+                cameraToEdit = camera
             }
-        }
+        )
     }
 }
+
 @Composable
 fun CameraTableHeader() {
 
@@ -165,29 +234,60 @@ fun RowScope.CameraHeaderText(text:String, weight:Float){
 }
 
 @Composable
-fun CameraRow(camera: Camera) {
+fun CameraTable(
+    cameras: List<CameraData>,
+    onDelete: (String) -> Unit,
+    onEdit: (CameraData) -> Unit
+) {
+    val horizontalScrollState = rememberScrollState()
 
-    Row(
-        modifier = Modifier
-            .width(950.dp)
-            .padding(vertical = 18.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
+    Column(modifier = Modifier.fillMaxWidth()) {
+        Column(modifier = Modifier.horizontalScroll(horizontalScrollState)) {
+            CameraTableHeader()
+            HorizontalDivider(color = Color(0xFFE0E0E0))
 
-        CameraPlate(camera.Location)
-
-        CameraChip(camera.Type, 1f)
-
-        CameraColumn(camera.CoordinateLat, camera.CoordinateLong)
-
-        CameraChip(camera.CameraID, 1f)
-
-        CameraChip(camera.Resgistered, 1f)
-
-        CameraActionButtons()
+            LazyColumn(modifier = Modifier.height(500.dp)) { // Give it a height or use weight
+                items(cameras) { camera ->
+                    CameraRow(
+                        camera = camera,
+                        onDelete = { onDelete(camera.id) },
+                        onEdit = { onEdit(camera) }
+                    )
+                    HorizontalDivider(color = Color(0xFFEAEAEA))
+                }
+            }
+        }
     }
 }
 
+@Composable
+fun CameraRow(
+    camera: CameraData,
+    onDelete: () -> Unit,
+    onEdit: () -> Unit
+) {
+    Row(
+        modifier = Modifier.width(950.dp).padding(vertical = 18.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        // Map API data to UI
+        CameraPlate(camera.cameraLocation) // Using location as the primary ID/Plate
+        CameraChip(camera.cameraType, 1f)
+        CameraColumn(camera.lat.toString(), camera.long.toString())
+        CameraChip(camera.id.takeLast(5), 1f) // Short ID
+        CameraChip(camera.createdAt.split("T")[0], 1f) // Date only
+
+        // Action Buttons
+        Row(modifier = Modifier.weight(1f)) {
+            IconButton(onClick = onEdit) {
+                Icon(Icons.Default.Edit, contentDescription = "Edit")
+            }
+            IconButton(onClick = onDelete) {
+                Icon(Icons.Default.Delete, contentDescription = "Delete", tint = Color.Red)
+            }
+        }
+    }
+}
 @Composable
 fun RowScope.CameraPlate(number:String){
 
@@ -275,5 +375,5 @@ fun RowScope.CameraActionButtons(){
 @Preview(showBackground = true)
 @Composable
 fun CameraScreenPreview() {
-    CameraScreen()
+//    CameraScreen()
 }

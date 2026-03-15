@@ -22,4 +22,8 @@ object AllAPIClient {
         retrofit.create(VehicleAPIServices::class.java)
     }
 
+    val cameraApiService: CameraAPIServices by lazy {
+        retrofit.create(CameraAPIServices::class.java)
+    }
+
 }

@@ -108,7 +108,7 @@ fun Navigation(
         }
 
         composable(Screen.CameraScreen.route) {
-            CameraScreen()
+            CameraScreen(navController=navController)
         }
 
         composable(Screen.VehicleScreen.route) {
