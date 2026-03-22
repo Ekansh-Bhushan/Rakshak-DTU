@@ -75,5 +75,20 @@ fun Navigation(
         composable(Screen.LogScreen.route) {
             LogScreen()
         }
+
+        composable(Screen.ForgotPasswordScreen.route) {
+            ForgotPasswordScreen(navController = navController)
+        }
+
+        composable(
+            Screen.ForgotPasswordOTPScreen.route + "/{email}",
+            arguments = listOf(navArgument("email") { type = NavType.StringType; defaultValue = "" })
+        ) { backStackEntry ->
+            ForgotPasswordOTPScreen(
+                email        = backStackEntry.arguments?.getString("email") ?: "",
+                navController = navController
+            )
+        }
+
     }
 }

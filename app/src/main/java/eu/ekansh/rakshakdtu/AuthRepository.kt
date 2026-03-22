@@ -23,4 +23,26 @@ class AuthRepository {
         val request = VerifyOtpRequest(email, otp)
         return rakshakService.verifySigninOtp(request)
     }
+
+    suspend fun forgotPassword(email: String): Response<ForgotPasswordResponse> =
+        rakshakService.forgotPassword(ForgotPasswordRequest(email))
+
+    suspend fun verifyForgotPasswordOtp(
+        email: String,
+        otp: String,
+        newPassword: String
+    ): Response<VerifyForgotPasswordResponse> =
+        rakshakService.verifyForgotPasswordOtp(
+            VerifyForgotPasswordRequest(email, otp, newPassword)
+        )
+
+    suspend fun updatePassword(
+        token: String,
+        currentPassword: String,
+        newPassword: String
+    ): Response<UpdatePasswordResponse> =
+        rakshakService.updatePassword(
+            bearerToken = "Bearer $token",
+            request = UpdatePasswordRequest(currentPassword, newPassword)
+        )
 }

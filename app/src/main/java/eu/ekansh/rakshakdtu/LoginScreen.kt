@@ -129,6 +129,16 @@ fun LoginScreen(navController: NavHostController) {
                     Text("Continue With OTP", color = Color.White)
                 }
             }
+            Spacer(Modifier.height(8.dp))
+            Text(
+                "Forgot Password?",
+                color    = colorResource(R.color.lightGreen),
+                fontSize = 14.sp,
+                modifier = Modifier.clickable {
+                    authViewModel.clearError()
+                    navController.navigate(Screen.ForgotPasswordScreen.route)
+                }
+            )
 
             Spacer(Modifier.height(16.dp))
             Row {

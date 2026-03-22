@@ -60,6 +60,8 @@ android {
 }
 
 dependencies {
+    // Notification
+    implementation("com.google.firebase:firebase-messaging:23.4.0")
 
     implementation("androidx.activity:activity-ktx:1.9.3")
 

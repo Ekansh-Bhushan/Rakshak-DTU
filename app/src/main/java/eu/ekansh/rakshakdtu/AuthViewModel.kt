@@ -19,6 +19,9 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
     var accessToken  = mutableStateOf<String?>(null)
     var errorMessage = mutableStateOf<String?>(null)
     var isLoading    = mutableStateOf(false)
+    var forgotPasswordEmail    = mutableStateOf("")
+    var forgotPasswordOtpSent  = mutableStateOf(false)
+
 
     private val _toastEvent = MutableSharedFlow<String>()
     val toastEvent = _toastEvent.asSharedFlow()
@@ -150,5 +153,95 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
     fun reset() {
         email.value = ""; password.value = ""
         otpSent.value = false; accessToken.value = null; errorMessage.value = null
+    }
+
+    // ── FORGOT PASSWORD — step 1: request OTP ────────────────────────────
+    fun forgotPassword(email: String) {
+        viewModelScope.launch {
+            isLoading.value = true
+            errorMessage.value = null
+            try {
+                val response = AuthRepository().forgotPassword(email)
+                if (response.isSuccessful) {
+                    forgotPasswordEmail.value   = email
+                    forgotPasswordOtpSent.value = true
+                    _toastEvent.emit("OTP sent to $email ✓")
+                } else {
+                    errorMessage.value = "Failed to send OTP. Try again."
+                }
+            } catch (e: Exception) {
+                errorMessage.value = e.message ?: "An error occurred"
+            } finally {
+                isLoading.value = false
+            }
+        }
+    }
+
+    // ── FORGOT PASSWORD — step 2: verify OTP + set new password ──────────
+    fun verifyForgotPasswordOtp(email: String, otp: String, newPassword: String) {
+        viewModelScope.launch {
+            isLoading.value = true
+            errorMessage.value = null
+            try {
+                val response = AuthRepository().verifyForgotPasswordOtp(email, otp, newPassword)
+                if (response.isSuccessful) {
+                    forgotPasswordOtpSent.value = false
+                    forgotPasswordEmail.value   = ""
+                    _toastEvent.emit("Password reset! Please sign in ✓")
+                } else {
+                    errorMessage.value = "Invalid or expired OTP"
+                }
+            } catch (e: Exception) {
+                errorMessage.value = e.message ?: "An error occurred"
+            } finally {
+                isLoading.value = false
+            }
+        }
+    }
+
+    // ── UPDATE PASSWORD (authenticated) ──────────────────────────────────
+    fun updatePassword(
+        currentPassword: String,
+        newPassword: String,
+        onSuccess: () -> Unit       // let the UI navigate/react after success
+    ) {
+        viewModelScope.launch {
+            isLoading.value = true
+            errorMessage.value = null
+            try {
+                val token = tokenManager.getToken()
+                if (token == null) {
+                    errorMessage.value = "Session expired. Please sign in again."
+                    return@launch
+                }
+                val response = AuthRepository().updatePassword(token, currentPassword, newPassword)
+                if (response.isSuccessful) {
+                    // Server clears refresh token → wipe local session too
+                    tokenManager.clearAll()
+                    storedEmail.value  = null
+                    accessToken.value  = null
+                    email.value        = ""
+                    password.value     = ""
+                    _toastEvent.emit("Password updated! Please sign in again ✓")
+                    onSuccess()
+                } else {
+                    errorMessage.value = when (response.code()) {
+                        400  -> "New password must differ from current password"
+                        401  -> "Current password is incorrect"
+                        else -> "Failed to update password"
+                    }
+                }
+            } catch (e: Exception) {
+                errorMessage.value = e.message ?: "An error occurred"
+            } finally {
+                isLoading.value = false
+            }
+        }
+    }
+
+    fun resetForgotPassword() {
+        forgotPasswordEmail.value   = ""
+        forgotPasswordOtpSent.value = false
+        errorMessage.value          = null
     }
 }

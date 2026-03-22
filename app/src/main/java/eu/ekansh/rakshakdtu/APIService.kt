@@ -2,6 +2,7 @@ package eu.ekansh.rakshakdtu
 
 import retrofit2.Response
 import retrofit2.http.Body
+import retrofit2.http.Header
 import retrofit2.http.POST
 
 val rakshakService = ApiClient.apiService
@@ -27,4 +28,20 @@ interface APIService {
     suspend fun verifySigninOtp(
         @Body request: VerifyOtpRequest
     ): Response<VerifyOtpResponse>
+
+    @POST("forgot-password")
+    suspend fun forgotPassword(
+        @Body request: ForgotPasswordRequest
+    ): Response<ForgotPasswordResponse>
+
+    @POST("forgot-password/verify-otp")
+    suspend fun verifyForgotPasswordOtp(
+        @Body request: VerifyForgotPasswordRequest
+    ): Response<VerifyForgotPasswordResponse>
+
+    @POST("update-password")
+    suspend fun updatePassword(
+        @Header("Authorization") bearerToken: String,
+        @Body request: UpdatePasswordRequest
+    ): Response<UpdatePasswordResponse>
 }
