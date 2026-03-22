@@ -25,6 +25,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import kotlinx.coroutines.launch
+import androidx.compose.material.icons.filled.Lock
 
 @Composable
 fun AppDrawer(
@@ -105,6 +106,18 @@ fun AppDrawer(
             onClick = {
                 navController.navigate(Screen.LogScreen.route) {
                     popUpTo(Screen.DashboardScreen.route); launchSingleTop = true
+                }
+                onCloseDrawer()
+            }
+        )
+        DrawerItem(
+            icon     = Icons.Default.Lock,
+            title    = "Update Password",
+            selected = currentRoute == Screen.UpdatePasswordScreen.route,
+            onClick  = {
+                navController.navigate(Screen.UpdatePasswordScreen.route) {
+                    popUpTo(Screen.DashboardScreen.route)
+                    launchSingleTop = true
                 }
                 onCloseDrawer()
             }

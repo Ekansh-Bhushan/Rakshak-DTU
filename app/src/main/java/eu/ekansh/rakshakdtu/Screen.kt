@@ -15,7 +15,7 @@ sealed class Screen(val route:String) {
     object LogScreen : Screen("logScreen")
 
     object SplashScreen : Screen("splashScreen")
-
+    object UpdatePasswordScreen : Screen("updatePasswordScreen")
     object ForgotPasswordScreen    : Screen("forgotPasswordScreen")
     object ForgotPasswordOTPScreen : Screen("forgotPasswordOTPScreen")
 }
