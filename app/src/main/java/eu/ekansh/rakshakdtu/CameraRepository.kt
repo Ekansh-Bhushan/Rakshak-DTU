@@ -4,6 +4,8 @@ import retrofit2.Response
 
 class cameraRepository {
 
+    private val cameraRakshakService get() = AllAPIClient.cameraApiService
+
     suspend fun getAllCamera(token: String,) : Response<AllCameraGetData>{
         return cameraRakshakService.getAllCamera(accessToken = "Bearer $token")
     }

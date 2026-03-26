@@ -5,8 +5,6 @@ import retrofit2.http.GET
 import retrofit2.http.Header
 import retrofit2.http.Query
 
-val logRakshakService: LogAPIServices = AllAPIClient.logApiService
-
 interface LogAPIServices {
 
     @GET("scan/logs")

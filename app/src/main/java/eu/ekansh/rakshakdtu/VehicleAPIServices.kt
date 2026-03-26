@@ -10,8 +10,6 @@ import retrofit2.http.PUT
 import retrofit2.http.Path
 import retrofit2.http.Query
 
-
-val vehicleRakshakService: VehicleAPIServices = AllAPIClient.vehicleApiService
 interface VehicleAPIServices {
 
     @POST("vehicles")

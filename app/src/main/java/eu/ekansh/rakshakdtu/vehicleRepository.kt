@@ -4,6 +4,8 @@ import retrofit2.Response
 
 class vehicleRepository {
 
+    private val vehicleRakshakService get() = AllAPIClient.vehicleApiService
+
     suspend fun getAllVehicles(token: String,search: String? = null) : Response<AllVehicleGetData>{
         return vehicleRakshakService.getAllVehicles(accessToken = "Bearer $token",query = search)
     }

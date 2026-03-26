@@ -18,6 +18,7 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
 
         ApiClient.init(applicationContext)
+        AllAPIClient.init(applicationContext)
 
         // Block screenshots
         window.setFlags(
