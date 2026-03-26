@@ -21,6 +21,8 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
     var isLoading    = mutableStateOf(false)
     var forgotPasswordEmail    = mutableStateOf("")
     var forgotPasswordOtpSent  = mutableStateOf(false)
+    private val _navigateToLogin = MutableSharedFlow<Unit>()
+    val navigateToLogin = _navigateToLogin.asSharedFlow()
 
 
     private val _toastEvent = MutableSharedFlow<String>()
@@ -155,7 +157,7 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
         otpSent.value = false; accessToken.value = null; errorMessage.value = null
     }
 
-    // ── FORGOT PASSWORD — step 1: request OTP ────────────────────────────
+    // ── FORGOT PASSWORD — step 1 ──────────────────────────────────────────
     fun forgotPassword(email: String) {
         viewModelScope.launch {
             isLoading.value = true
@@ -167,17 +169,17 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
                     forgotPasswordOtpSent.value = true
                     _toastEvent.emit("OTP sent to $email ✓")
                 } else {
-                    errorMessage.value = "Failed to send OTP. Try again."
+                    errorMessage.value = response.errorMessage()
                 }
             } catch (e: Exception) {
-                errorMessage.value = e.message ?: "An error occurred"
+                errorMessage.value = "Network error. Check your connection."
             } finally {
                 isLoading.value = false
             }
         }
     }
 
-    // ── FORGOT PASSWORD — step 2: verify OTP + set new password ──────────
+    // ── FORGOT PASSWORD — step 2 ──────────────────────────────────────────
     fun verifyForgotPasswordOtp(email: String, otp: String, newPassword: String) {
         viewModelScope.launch {
             isLoading.value = true
@@ -188,22 +190,22 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
                     forgotPasswordOtpSent.value = false
                     forgotPasswordEmail.value   = ""
                     _toastEvent.emit("Password reset! Please sign in ✓")
+                    _navigateToLogin.emit(Unit)   // ← this line must be present
                 } else {
-                    errorMessage.value = "Invalid or expired OTP"
+                    errorMessage.value = response.errorMessage()
                 }
             } catch (e: Exception) {
-                errorMessage.value = e.message ?: "An error occurred"
+                errorMessage.value = "Network error. Check your connection."
             } finally {
                 isLoading.value = false
             }
         }
     }
-
-    // ── UPDATE PASSWORD (authenticated) ──────────────────────────────────
+    // ── UPDATE PASSWORD ───────────────────────────────────────────────────
     fun updatePassword(
         currentPassword: String,
         newPassword: String,
-        onSuccess: () -> Unit       // let the UI navigate/react after success
+        onSuccess: () -> Unit
     ) {
         viewModelScope.launch {
             isLoading.value = true
@@ -216,7 +218,6 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
                 }
                 val response = AuthRepository().updatePassword(token, currentPassword, newPassword)
                 if (response.isSuccessful) {
-                    // Server clears refresh token → wipe local session too
                     tokenManager.clearAll()
                     storedEmail.value  = null
                     accessToken.value  = null
@@ -225,14 +226,10 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
                     _toastEvent.emit("Password updated! Please sign in again ✓")
                     onSuccess()
                 } else {
-                    errorMessage.value = when (response.code()) {
-                        400  -> "New password must differ from current password"
-                        401  -> "Current password is incorrect"
-                        else -> "Failed to update password"
-                    }
+                    errorMessage.value = response.errorMessage()
                 }
             } catch (e: Exception) {
-                errorMessage.value = e.message ?: "An error occurred"
+                errorMessage.value = "Network error. Check your connection."
             } finally {
                 isLoading.value = false
             }

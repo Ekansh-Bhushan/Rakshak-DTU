@@ -22,7 +22,7 @@ import androidx.navigation.NavHostController
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun UpdatePasswordScreen(
-    rootNavController: NavHostController    // needs root nav to go to LoginScreen on success
+    rootNavController: NavHostController
 ) {
     val authViewModel: AuthViewModel = viewModel()
 
@@ -48,12 +48,12 @@ fun UpdatePasswordScreen(
                 "Update Password",
                 fontWeight = FontWeight.ExtraBold,
                 fontSize   = 22.sp,
-                color      = Color.White
+                color      = Color.Black
             )
             Text(
                 "Enter your current password and choose a new one.",
                 fontSize = 13.sp,
-                color    = Color.Gray
+                color    = Color.Black
             )
             Spacer(Modifier.height(8.dp))
 
@@ -64,9 +64,9 @@ fun UpdatePasswordScreen(
                     currentPassword = it
                     authViewModel.clearError()
                 },
-                label         = { Text("Current Password", color = Color.Gray) },
+                label         = { Text("Current Password", color = Color.Black) },
                 modifier      = Modifier.fillMaxWidth(),
-                textStyle     = TextStyle(color = Color.White),
+                textStyle     = TextStyle(color = Color.Black),
                 singleLine    = true,
                 visualTransformation = if (currentPasswordVisible)
                     VisualTransformation.None else PasswordVisualTransformation(),
@@ -77,17 +77,17 @@ fun UpdatePasswordScreen(
                 trailingIcon = {
                     IconButton(onClick = { currentPasswordVisible = !currentPasswordVisible }) {
                         Icon(
-                            imageVector = if (currentPasswordVisible)
+                            imageVector        = if (currentPasswordVisible)
                                 Icons.Filled.Visibility else Icons.Filled.VisibilityOff,
                             contentDescription = null,
-                            tint = Color.Gray
+                            tint               = Color.Black
                         )
                     }
                 },
                 colors = TextFieldDefaults.outlinedTextFieldColors(
                     focusedBorderColor   = colorResource(R.color.lightGreen),
-                    unfocusedBorderColor = Color.Gray,
-                    cursorColor          = Color.White
+                    unfocusedBorderColor = colorResource(R.color.grey),
+                    cursorColor          = Color.Black
                 )
             )
 
@@ -98,9 +98,9 @@ fun UpdatePasswordScreen(
                     newPassword = it
                     authViewModel.clearError()
                 },
-                label         = { Text("New Password", color = Color.Gray) },
+                label         = { Text("New Password", color = Color.Black) },
                 modifier      = Modifier.fillMaxWidth(),
-                textStyle     = TextStyle(color = Color.White),
+                textStyle     = TextStyle(color = Color.Black),
                 singleLine    = true,
                 visualTransformation = if (newPasswordVisible)
                     VisualTransformation.None else PasswordVisualTransformation(),
@@ -111,17 +111,17 @@ fun UpdatePasswordScreen(
                 trailingIcon = {
                     IconButton(onClick = { newPasswordVisible = !newPasswordVisible }) {
                         Icon(
-                            imageVector = if (newPasswordVisible)
+                            imageVector        = if (newPasswordVisible)
                                 Icons.Filled.Visibility else Icons.Filled.VisibilityOff,
                             contentDescription = null,
-                            tint = Color.Gray
+                            tint               = Color.Black
                         )
                     }
                 },
                 colors = TextFieldDefaults.outlinedTextFieldColors(
                     focusedBorderColor   = colorResource(R.color.lightGreen),
-                    unfocusedBorderColor = Color.Gray,
-                    cursorColor          = Color.White
+                    unfocusedBorderColor = colorResource(R.color.grey),
+                    cursorColor          = Color.Black
                 )
             )
 

@@ -1,6 +1,16 @@
 package eu.ekansh.rakshakdtu
 
+import org.json.JSONObject
 import retrofit2.Response
+
+fun <T> Response<T>.errorMessage(): String {
+    return try {
+        val json = JSONObject(errorBody()?.string() ?: "")
+        json.optString("message", "Something went wrong")
+    } catch (e: Exception) {
+        message() ?: "Something went wrong"
+    }
+}
 
 class AuthRepository {
 

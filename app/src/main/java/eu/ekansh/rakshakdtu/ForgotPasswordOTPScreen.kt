@@ -29,23 +29,23 @@ fun ForgotPasswordOTPScreen(
 ) {
     val authViewModel: AuthViewModel = viewModel()
 
-    var otp                by remember { mutableStateOf("") }
-    var newPassword        by remember { mutableStateOf("") }
-    var passwordVisible    by remember { mutableStateOf(false) }
+    var otp             by remember { mutableStateOf("") }
+    var newPassword     by remember { mutableStateOf("") }
+    var passwordVisible by remember { mutableStateOf(false) }
 
-    // On success the VM resets forgotPasswordOtpSent → false and emits a toast.
-    // Navigate back to LoginScreen so the user signs in with the new password.
-    LaunchedEffect(authViewModel.forgotPasswordOtpSent.value) {
-        if (!authViewModel.forgotPasswordOtpSent.value
-            && otp.isNotEmpty()         // guard against initial false trigger
-        ) {
+    // ── Clear stale errors on entry ───────────────────────────────────────
+    LaunchedEffect(Unit) {
+        authViewModel.clearError()
+    }
+
+    // ── Navigate to LoginScreen when VM emits success ─────────────────────
+    LaunchedEffect(Unit) {
+        authViewModel.navigateToLogin.collect {
             navController.navigate(Screen.LoginScreen.route) {
-                popUpTo(Screen.ForgotPasswordScreen.route) { inclusive = true }
+                popUpTo(0) { inclusive = true }   // wipe entire back stack
             }
         }
     }
-
-    LaunchedEffect(Unit) { authViewModel.clearError() }
 
     Box(modifier = Modifier.fillMaxSize()) {
         Column(
@@ -56,9 +56,9 @@ fun ForgotPasswordOTPScreen(
             verticalArrangement = Arrangement.Center
         ) {
             Image(
-                painter           = painterResource(R.drawable.logo_dtu),
+                painter            = painterResource(R.drawable.logo_dtu),
                 contentDescription = "DTU logo",
-                modifier          = Modifier.size(120.dp)
+                modifier           = Modifier.size(120.dp)
             )
             Spacer(Modifier.height(16.dp))
             Text("DTU Rakshak", fontWeight = FontWeight.ExtraBold, fontSize = 24.sp)
@@ -68,11 +68,9 @@ fun ForgotPasswordOTPScreen(
             Text("OTP sent to $email", fontSize = 12.sp)
             Spacer(Modifier.height(24.dp))
 
-            // ── OTP input (reuses your existing OTPInput composable) ──────
             OTPInput(otpLength = 6) { otp = it }
             Spacer(Modifier.height(16.dp))
 
-            // ── New password field ────────────────────────────────────────
             OutlinedTextField(
                 value         = newPassword,
                 onValueChange = {
@@ -86,21 +84,17 @@ fun ForgotPasswordOTPScreen(
                 textStyle     = TextStyle(color = Color.Black),
                 singleLine    = true,
                 visualTransformation = if (passwordVisible)
-                    VisualTransformation.None
-                else
-                    PasswordVisualTransformation(),
+                    VisualTransformation.None else PasswordVisualTransformation(),
                 keyboardOptions = KeyboardOptions(
                     keyboardType = KeyboardType.Password,
                     imeAction    = ImeAction.Done
                 ),
-                trailingIcon  = {
+                trailingIcon = {
                     IconButton(onClick = { passwordVisible = !passwordVisible }) {
                         Icon(
                             imageVector        = if (passwordVisible)
-                                Icons.Filled.Visibility
-                            else
-                                Icons.Filled.VisibilityOff,
-                            contentDescription = if (passwordVisible) "Hide password" else "Show password"
+                                Icons.Filled.Visibility else Icons.Filled.VisibilityOff,
+                            contentDescription = if (passwordVisible) "Hide" else "Show"
                         )
                     }
                 },
@@ -125,11 +119,11 @@ fun ForgotPasswordOTPScreen(
             Button(
                 onClick = {
                     when {
-                        otp.length != 6         ->
+                        otp.length != 6        ->
                             authViewModel.errorMessage.value = "Please enter the 6-digit OTP"
-                        newPassword.length < 8  ->
+                        newPassword.length < 8 ->
                             authViewModel.errorMessage.value = "Password must be at least 8 characters"
-                        else                    ->
+                        else                   ->
                             authViewModel.verifyForgotPasswordOtp(email, otp, newPassword)
                     }
                 },
@@ -155,7 +149,9 @@ fun ForgotPasswordOTPScreen(
             Button(
                 onClick  = { navController.popBackStack() },
                 enabled  = !authViewModel.isLoading.value,
-                colors   = ButtonDefaults.buttonColors(containerColor = colorResource(R.color.back_button_color)),
+                colors   = ButtonDefaults.buttonColors(
+                    containerColor = colorResource(R.color.back_button_color)
+                ),
                 modifier = Modifier.fillMaxWidth(0.6f)
             ) {
                 Text("Back", color = Color.Black)
