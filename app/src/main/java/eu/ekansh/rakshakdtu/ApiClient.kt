@@ -1,5 +1,9 @@
 package eu.ekansh.rakshakdtu
 
+import android.content.Context
+import eu.ekansh.rakshakdtu.data.TokenManager
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import okhttp3.OkHttpClient
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
@@ -7,17 +11,27 @@ import retrofit2.converter.gson.GsonConverterFactory
 object ApiClient {
     private const val BASE_URL = "http://93.127.172.217:2006/api/v1/auth/"
 
-    val apiService: APIService by lazy {
+    private val _forceLogout = MutableSharedFlow<Unit>(extraBufferCapacity = 1)
+    val forceLogout = _forceLogout.asSharedFlow()
 
-        val httpClient = OkHttpClient.Builder()
-            // Add any interceptors here if needed for headers, logging, etc.
+    fun triggerForceLogout() {
+        _forceLogout.tryEmit(Unit)
+    }
+
+    fun init(context: Context) {
+        val tokenManager = TokenManager(context)
+        val client = OkHttpClient.Builder()
+            .addInterceptor(AuthInterceptor(tokenManager))
             .build()
 
-        Retrofit.Builder()
+        val retrofit = Retrofit.Builder()
             .baseUrl(BASE_URL)
-            .client(httpClient)
+            .client(client)
             .addConverterFactory(GsonConverterFactory.create())
             .build()
-            .create(APIService::class.java)
+
+        apiService = retrofit.create(APIService::class.java)
     }
+
+    lateinit var apiService: APIService
 }

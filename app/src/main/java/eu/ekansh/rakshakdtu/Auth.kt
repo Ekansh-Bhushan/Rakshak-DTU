@@ -43,6 +43,7 @@ data class EmailData(
 
 data class TokenData(
     val accessToken: String,
+    val refreshToken: String,
     val email: String
 )
 
@@ -79,4 +80,19 @@ data class UpdatePasswordResponse(
     val statusCode: Int,
     val data: Any?,
     val message: String
+)
+
+data class RefreshToken(
+    val refreshToken : String
+)
+
+data class ResponseRefreshToken(
+    val statusCode : Int,
+    val data : AccessTokenData,
+    val message : String,
+    val success : Boolean
+)
+
+data class AccessTokenData(
+    val accessToken : String
 )

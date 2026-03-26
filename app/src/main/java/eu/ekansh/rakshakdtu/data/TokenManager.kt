@@ -11,7 +11,8 @@ private val Context.dataStore by preferencesDataStore("auth")
 class TokenManager(private val context: Context) {
 
     private val TOKEN_KEY = stringPreferencesKey("jwt_token")
-    private val EMAIL_KEY = stringPreferencesKey("user_email")   // ✅ added
+    private val REFRESH_KEY = stringPreferencesKey("refresh_token")
+    private val EMAIL_KEY = stringPreferencesKey("user_email")
 
     suspend fun saveToken(token: String) {
         context.dataStore.edit { it[TOKEN_KEY] = token }
@@ -23,6 +24,14 @@ class TokenManager(private val context: Context) {
     suspend fun clearToken() {
         context.dataStore.edit { it.remove(TOKEN_KEY) }
     }
+
+    //  Refresh token
+
+    suspend fun saveRefreshToken(token: String) =             // ← add this
+        context.dataStore.edit { it[REFRESH_KEY] = token }
+
+    suspend fun getRefreshToken(): String? =                  // ← add this
+        context.dataStore.data.first()[REFRESH_KEY]
 
     // ── Email ──────────────────────────────────────────────────────────────
     suspend fun saveEmail(email: String) {

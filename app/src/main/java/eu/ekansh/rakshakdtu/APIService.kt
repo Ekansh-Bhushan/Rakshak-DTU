@@ -5,8 +5,6 @@ import retrofit2.http.Body
 import retrofit2.http.Header
 import retrofit2.http.POST
 
-val rakshakService = ApiClient.apiService
-
 interface APIService {
 
     @POST("signup")
@@ -44,4 +42,9 @@ interface APIService {
         @Header("Authorization") bearerToken: String,
         @Body request: UpdatePasswordRequest
     ): Response<UpdatePasswordResponse>
+
+    @POST("refresh-token")
+    suspend fun getAccessToken(
+        @Body request: RefreshToken
+    ) : Response<ResponseRefreshToken>
 }

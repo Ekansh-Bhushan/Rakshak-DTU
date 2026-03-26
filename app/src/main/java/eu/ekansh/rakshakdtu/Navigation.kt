@@ -1,6 +1,7 @@
 package eu.ekansh.rakshakdtu
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.NavHostController
@@ -15,6 +16,15 @@ import eu.ekansh.rakshakdtu.data.TokenManager
 fun Navigation(
     navController: NavHostController = rememberNavController()
 ) {
+
+    LaunchedEffect(Unit) {
+        ApiClient.forceLogout.collect {
+            navController.navigate(Screen.LoginScreen.route) {
+                popUpTo(0) { inclusive = true }  // clear entire back stack
+            }
+        }
+    }
+
     NavHost(
         navController = navController,
         startDestination = Screen.SplashScreen.route

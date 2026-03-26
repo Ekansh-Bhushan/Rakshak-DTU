@@ -71,12 +71,13 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
             try {
                 val response = AuthRepository().verifySignupOtp(email, otp)
                 if (response.isSuccessful) {
-                    val token = response.body()?.data?.accessToken
-                    accessToken.value = token
-                    token?.let {
-                        tokenManager.saveToken(it)
+                    val body = response.body()?.data
+                    body?.let {
+                        tokenManager.saveToken(it.accessToken)
+                        tokenManager.saveRefreshToken(it.refreshToken)
                         tokenManager.saveEmail(email)
-                        storedEmail.value = email   // ✅ instant in-memory update
+                        accessToken.value  = it.accessToken
+                        storedEmail.value  = email
                     }
                     _toastEvent.emit("Account verified! Welcome 🎉")
                 } else {
@@ -119,12 +120,13 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
             try {
                 val response = AuthRepository().verifySigninOtp(email, otp)
                 if (response.isSuccessful) {
-                    val token = response.body()?.data?.accessToken
-                    accessToken.value = token
-                    token?.let {
-                        tokenManager.saveToken(it)
+                    val body = response.body()?.data
+                    body?.let {
+                        tokenManager.saveToken(it.accessToken)
+                        tokenManager.saveRefreshToken(it.refreshToken)
                         tokenManager.saveEmail(email)
-                        storedEmail.value = email   // ✅ instant in-memory update
+                        accessToken.value  = it.accessToken
+                        storedEmail.value  = email
                     }
                     _toastEvent.emit("Welcome back! ✓")
                 } else {
@@ -240,5 +242,18 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
         forgotPasswordEmail.value   = ""
         forgotPasswordOtpSent.value = false
         errorMessage.value          = null
+    }
+
+    fun getAccessToken(refreshToken : String){
+        viewModelScope.launch {
+            try {
+                val response = AuthRepository().getAccessToken(refreshToken)
+                if (response.isSuccessful){
+
+                }
+            } catch (e: Exception){
+                errorMessage.value = e.message ?: "Did not found the token"
+            }
+        }
     }
 }

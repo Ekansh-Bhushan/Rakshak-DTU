@@ -17,6 +17,8 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        ApiClient.init(applicationContext)
+
         // Block screenshots
         window.setFlags(
             WindowManager.LayoutParams.FLAG_SECURE,

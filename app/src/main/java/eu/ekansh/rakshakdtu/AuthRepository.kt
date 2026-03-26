@@ -14,6 +14,8 @@ fun <T> Response<T>.errorMessage(): String {
 
 class AuthRepository {
 
+    private val rakshakService get() = ApiClient.apiService
+
     suspend fun signup(email: String, password: String): Response<SignupResponse> {
         val request = SignupRequest(email, password)
         return rakshakService.signup(request)
@@ -55,4 +57,9 @@ class AuthRepository {
             bearerToken = "Bearer $token",
             request = UpdatePasswordRequest(currentPassword, newPassword)
         )
+
+    suspend fun getAccessToken( refreshToken : String) : Response<ResponseRefreshToken> {
+        val request = RefreshToken(refreshToken)
+        return rakshakService.getAccessToken(request)
+    }
 }
