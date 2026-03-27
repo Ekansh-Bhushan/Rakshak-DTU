@@ -16,6 +16,9 @@ object AllAPIClient {
     lateinit var logApiService: LogAPIServices
         private set
 
+    lateinit var deviceApiService: DeviceAPIService
+        private set
+
     fun init(context: Context) {
         val tokenManager = TokenManager(context)
         val client = OkHttpClient.Builder()
@@ -31,5 +34,6 @@ object AllAPIClient {
         vehicleApiService = retrofit.create(VehicleAPIServices::class.java)
         cameraApiService  = retrofit.create(CameraAPIServices::class.java)
         logApiService     = retrofit.create(LogAPIServices::class.java)
+        deviceApiService  = retrofit.create(DeviceAPIService::class.java)
     }
 }

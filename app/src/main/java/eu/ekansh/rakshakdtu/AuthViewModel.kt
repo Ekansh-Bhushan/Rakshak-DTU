@@ -4,6 +4,7 @@ import android.app.Application
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
+import com.google.firebase.messaging.FirebaseMessaging
 import eu.ekansh.rakshakdtu.data.TokenManager
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
@@ -71,6 +72,7 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
             try {
                 val response = AuthRepository().verifySignupOtp(email, otp)
                 if (response.isSuccessful) {
+                    android.util.Log.d("FCM", "✅ Token registered: ${response.body()}")
                     val body = response.body()?.data
                     body?.let {
                         tokenManager.saveToken(it.accessToken)
@@ -78,6 +80,7 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
                         tokenManager.saveEmail(email)
                         accessToken.value  = it.accessToken
                         storedEmail.value  = email
+                        registerFcmToken(it.accessToken)
                     }
                     _toastEvent.emit("Account verified! Welcome 🎉")
                 } else {
@@ -120,6 +123,7 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
             try {
                 val response = AuthRepository().verifySigninOtp(email, otp)
                 if (response.isSuccessful) {
+                    android.util.Log.d("FCM", "✅ Token registered: ${response.body()}")
                     val body = response.body()?.data
                     body?.let {
                         tokenManager.saveToken(it.accessToken)
@@ -127,6 +131,7 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
                         tokenManager.saveEmail(email)
                         accessToken.value  = it.accessToken
                         storedEmail.value  = email
+                        registerFcmToken(it.accessToken)
                     }
                     _toastEvent.emit("Welcome back! ✓")
                 } else {
@@ -256,4 +261,42 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
             }
         }
     }
+
+    private fun registerFcmToken(accessToken: String) {
+        viewModelScope.launch {
+            try {
+                // Check if Firebase is actually ready
+                val messaging = FirebaseMessaging.getInstance()
+
+                messaging.token.addOnCompleteListener { task ->
+                    if (!task.isSuccessful) {
+                        android.util.Log.e("FCM", "❌ Token fetch failed", task.exception)
+                        return@addOnCompleteListener
+                    }
+
+                    val fcmToken = task.result
+                    android.util.Log.d("FCM", "🚀 Token fetched: ${fcmToken.take(10)}...")
+
+                    viewModelScope.launch {
+                        try {
+                            val response = AllAPIClient.deviceApiService.registerDeviceToken(
+                                accessToken = "Bearer $accessToken",
+                                request = DeviceTokenRequest(fcmToken)
+                            )
+                            if (response.isSuccessful) {
+                                android.util.Log.d("FCM", "✅ DB Updated Successfully")
+                            } else {
+                                android.util.Log.e("FCM", "❌ Server Error: ${response.code()} ${response.errorBody()?.string()}")
+                            }
+                        } catch (e: Exception) {
+                            android.util.Log.e("FCM", "❌ Network Error: ${e.message}")
+                        }
+                    }
+                }
+            } catch (e: IllegalStateException) {
+                android.util.Log.e("FCM", "❌ Firebase not ready yet: ${e.message}")
+            }
+        }
+    }
 }
+
