@@ -28,6 +28,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavHostController
 import eu.ekansh.rakshakdtu.data.TokenManager
 
 
@@ -36,7 +37,7 @@ import eu.ekansh.rakshakdtu.data.TokenManager
 // ─────────────────────────────────────────────────────────────────────────────
 
 @Composable
-fun LogScreen() {
+fun LogScreen(navController: NavHostController) {
     val context = LocalContext.current
 
     // ✅ FIX: pass Factory so Compose can construct LogViewModel(repository).
@@ -132,7 +133,15 @@ fun LogScreen() {
                     }
 
                     else -> {
-                        LogTable(logs = viewModel.displayedLogs, modifier = Modifier.weight(1f))
+                        LogTable(
+                            logs = viewModel.displayedLogs,
+                            modifier = Modifier.weight(1f),
+                            onLogClick = { log ->
+                                navController.navigate(
+                                    Screen.VehiclePathScreen.route + "/${log.id}/${log.vehicleNo}"
+                                )
+                            }
+                        )
 
                         if (viewModel.selectedTab == 0 && viewModel.totalPages > 1) {
                             Spacer(Modifier.height(12.dp))
@@ -286,7 +295,7 @@ private fun VehicleFilterDropdown(selected: String, onSelected: (String) -> Unit
 // ─────────────────────────────────────────────────────────────────────────────
 
 @Composable
-private fun LogTable(logs: List<Logs>, modifier: Modifier = Modifier) {
+private fun LogTable(logs: List<Logs>, modifier: Modifier = Modifier, onLogClick: (Logs) -> Unit = {}) {
     Column(modifier = modifier) {
         Box(modifier = Modifier.horizontalScroll(rememberScrollState())) {
             Column(modifier = Modifier.width(860.dp)) {
@@ -319,7 +328,7 @@ private fun LogTable(logs: List<Logs>, modifier: Modifier = Modifier) {
                 } else {
                     LazyColumn {
                         items(logs, key = { it.id }) { log ->
-                            LogRow(log = log)
+                            LogRow(log = log, onClick = { onLogClick(log) })
                             HorizontalDivider(color = Color(0xFFF3F4F6))
                         }
                     }
@@ -335,9 +344,9 @@ private fun LogTable(logs: List<Logs>, modifier: Modifier = Modifier) {
 // ─────────────────────────────────────────────────────────────────────────────
 
 @Composable
-private fun LogRow(log: Logs) {
+private fun LogRow(log: Logs,onClick: () -> Unit = {}) {
     Row(
-        modifier = Modifier.width(860.dp).padding(horizontal = 12.dp, vertical = 12.dp),
+        modifier = Modifier.width(860.dp).padding(horizontal = 12.dp, vertical = 12.dp).clickable { onClick() },
         verticalAlignment = Alignment.CenterVertically
     ) {
         Box(modifier = Modifier.weight(1.4f)) {

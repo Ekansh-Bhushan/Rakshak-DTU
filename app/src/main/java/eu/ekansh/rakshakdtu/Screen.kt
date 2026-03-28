@@ -18,4 +18,5 @@ sealed class Screen(val route:String) {
     object UpdatePasswordScreen : Screen("updatePasswordScreen")
     object ForgotPasswordScreen    : Screen("forgotPasswordScreen")
     object ForgotPasswordOTPScreen : Screen("forgotPasswordOTPScreen")
+    object VehiclePathScreen : Screen("vehiclePathScreen")
 }

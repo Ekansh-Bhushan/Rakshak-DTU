@@ -2,7 +2,10 @@ package eu.ekansh.rakshakdtu
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
@@ -83,7 +86,7 @@ fun Navigation(
         }
 
         composable(Screen.LogScreen.route) {
-            LogScreen()
+            LogScreen(navController = navController)
         }
 
         composable(Screen.ForgotPasswordScreen.route) {
@@ -97,6 +100,32 @@ fun Navigation(
             ForgotPasswordOTPScreen(
                 email        = backStackEntry.arguments?.getString("email") ?: "",
                 navController = navController
+            )
+        }
+
+        composable(
+            Screen.VehiclePathScreen.route + "/{entryId}/{vehicleNo}",
+            arguments = listOf(
+                navArgument("entryId")   { type = NavType.StringType },
+                navArgument("vehicleNo") { type = NavType.StringType }
+            )
+        ) { backStackEntry ->
+            val context = LocalContext.current
+            val tokenManager = remember { TokenManager(context) }
+            var token by remember { mutableStateOf("") }
+
+            LaunchedEffect(Unit) {
+                token = tokenManager.getToken() ?: ""
+            }
+
+            val encodedVehicleNo = backStackEntry.arguments?.getString("vehicleNo") ?: ""
+            val vehicleNo = java.net.URLDecoder.decode(encodedVehicleNo, "UTF-8")  // ← decode here
+
+            VehiclePathScreen(
+                token     = token,
+                entryId   = backStackEntry.arguments?.getString("entryId") ?: "",
+                vehicleNo = vehicleNo,
+                onBack    = { navController.popBackStack() }
             )
         }
 

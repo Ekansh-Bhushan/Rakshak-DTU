@@ -12,4 +12,7 @@ class LogRepository {
 
     suspend fun fetchActiveLogs(token: String) =
         logRakshakService.getActiveLogs("Bearer $token")
+
+    suspend fun fetchEntryPath(token: String, entryId: String) =
+        logRakshakService.getEntryPath("Bearer $token", entryId)
 }

@@ -13,8 +13,8 @@ android {
         applicationId = "eu.ekansh.rakshakdtu"
         minSdk = 24
         targetSdk = 34
-        versionCode = 3
-        versionName = "1.2"
+        versionCode = 4
+        versionName = "1.3"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
@@ -61,6 +61,9 @@ android {
 }
 
 dependencies {
+    // Map
+    implementation("org.osmdroid:osmdroid-android:6.1.18")
+
     implementation("com.squareup.okhttp3:logging-interceptor:4.12.0")
     // Notification
     implementation("com.google.firebase:firebase-messaging:23.4.1")
