@@ -19,4 +19,5 @@ sealed class Screen(val route:String) {
     object ForgotPasswordScreen    : Screen("forgotPasswordScreen")
     object ForgotPasswordOTPScreen : Screen("forgotPasswordOTPScreen")
     object VehiclePathScreen : Screen("vehiclePathScreen")
+    object MapScreen : Screen("mapScreen")
 }

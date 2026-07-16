@@ -54,7 +54,7 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
                     otpSent.value = true
                     _toastEvent.emit("OTP sent to $email ✓")
                 } else {
-                    errorMessage.value = response.message() ?: "Signup failed"
+                    errorMessage.value = response.errorMessage()
                 }
             } catch (e: Exception) {
                 errorMessage.value = e.message ?: "An error occurred"
@@ -84,7 +84,7 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
                     }
                     _toastEvent.emit("Account verified! Welcome 🎉")
                 } else {
-                    errorMessage.value = "Invalid or expired OTP"
+                    errorMessage.value = response.errorMessage()
                 }
             } catch (e: Exception) {
                 errorMessage.value = e.message ?: "An error occurred"
@@ -105,7 +105,7 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
                     otpSent.value = true
                     _toastEvent.emit("OTP sent to ${email.value} ✓")
                 } else {
-                    errorMessage.value = response.message() ?: "Invalid credentials"
+                    errorMessage.value = response.errorMessage()
                 }
             } catch (e: Exception) {
                 errorMessage.value = e.message ?: "An error occurred"
@@ -135,7 +135,7 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
                     }
                     _toastEvent.emit("Welcome back! ✓")
                 } else {
-                    errorMessage.value = "Invalid or expired OTP"
+                    errorMessage.value = response.errorMessage()
                 }
             } catch (e: Exception) {
                 errorMessage.value = e.message ?: "An error occurred"

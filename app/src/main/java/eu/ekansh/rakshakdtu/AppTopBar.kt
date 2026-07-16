@@ -69,6 +69,7 @@ fun AppBarView(navController: NavHostController) {  // navController = outer/roo
                 composable(Screen.CameraScreen.route)  { CameraScreen(navController = navController) }
                 composable(Screen.VehicleScreen.route) { VehicleScreen(navController = navController) }
                 composable(Screen.LogScreen.route)     { LogScreen(navController = navController) }
+                composable(Screen.MapScreen.route)     { MapScreen(navController = navController) }
                 composable(Screen.UpdatePasswordScreen.route) {
                     UpdatePasswordScreen(rootNavController = navController)
                 }
