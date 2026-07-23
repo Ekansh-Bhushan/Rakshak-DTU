@@ -26,6 +26,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import kotlinx.coroutines.launch
 import androidx.compose.material.icons.filled.Lock
+import androidx.compose.material.icons.filled.Map
 
 @Composable
 fun AppDrawer(
@@ -105,6 +106,16 @@ fun AppDrawer(
             selected = currentRoute == Screen.LogScreen.route,
             onClick = {
                 navController.navigate(Screen.LogScreen.route) {
+                    popUpTo(Screen.DashboardScreen.route); launchSingleTop = true
+                }
+                onCloseDrawer()
+            }
+        )
+        DrawerItem(
+            icon = Icons.Default.Map, title = "Map",
+            selected = currentRoute == Screen.MapScreen.route,
+            onClick = {
+                navController.navigate(Screen.MapScreen.route) {
                     popUpTo(Screen.DashboardScreen.route); launchSingleTop = true
                 }
                 onCloseDrawer()

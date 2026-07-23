@@ -7,7 +7,7 @@ import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 
 object AllAPIClient {
-    private const val BASE_URL = "http://93.127.172.217:2006/api/v1/"
+    private const val BASE_URL = "http://10.0.2.2:2006/api/v1/"
 
     lateinit var vehicleApiService: VehicleAPIServices
         private set

@@ -13,6 +13,10 @@ class CameraViewModel (
     var errorMessage = mutableStateOf<String?>(null)
     var toastMessage = mutableStateOf<String?>(null)
 
+    // UI States
+    var showRegisterForm = mutableStateOf(false)
+    var showSearch = mutableStateOf(false)
+
     fun getAllCameraDetails(accessToken: String){
         viewModelScope.launch {
             try {
