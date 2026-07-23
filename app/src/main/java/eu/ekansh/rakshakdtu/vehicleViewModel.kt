@@ -14,6 +14,10 @@ class VehicleViewModel (
     var errorMessage = mutableStateOf<String?>(null)
     var toastMessage = mutableStateOf<String?>(null)
 
+    // UI States
+    var showRegisterForm = mutableStateOf(false)
+    var showSearch = mutableStateOf(false)
+
     private var searchJob: kotlinx.coroutines.Job? = null
 
     fun onSearchQueryChanged(token: String, query: String) {

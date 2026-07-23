@@ -48,12 +48,15 @@ fun SplashScreen(
     )
 
     LaunchedEffect(Unit) {
+        android.util.Log.e("RAKSHAK_ERROR", "SplashScreen LaunchedEffect STARTED")
         // 1. Logo fades + pops in
         logoAlpha.animateTo(1f, tween(350))
+        android.util.Log.e("RAKSHAK_ERROR", "SplashScreen Logo Alpha Done")
         logoScale.animateTo(
             1f,
             spring(dampingRatio = Spring.DampingRatioMediumBouncy, stiffness = Spring.StiffnessMediumLow)
         )
+        android.util.Log.e("RAKSHAK_ERROR", "SplashScreen Logo Scale Done")
 
         // 2. Glow appears
         glowAlpha.animateTo(1f, tween(300))
@@ -70,13 +73,23 @@ fun SplashScreen(
         // 5. Bottom text
         bottomAlpha.animateTo(1f, tween(400))
 
+        android.util.Log.e("RAKSHAK_ERROR", "SplashScreen Animations Done, checking token...")
         delay(800)
 
-        val destination = if (tokenManager.getToken() != null)
+        val token = try {
+            tokenManager.getToken()
+        } catch (e: Exception) {
+            android.util.Log.e("RAKSHAK_ERROR", "SplashScreen Token Error", e)
+            null
+        }
+        android.util.Log.e("RAKSHAK_ERROR", "SplashScreen Token: $token")
+
+        val destination = if (token != null)
             Screen.DashboardScreen.route
         else
             Screen.LoginScreen.route
 
+        android.util.Log.e("RAKSHAK_ERROR", "SplashScreen Finished -> $destination")
         onFinished(destination)
     }
 
@@ -84,16 +97,7 @@ fun SplashScreen(
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(
-                Brush.radialGradient(
-                    colors = listOf(
-                        Color(0xFF0A1628),
-                        Color(0xFF060D1A),
-                        Color(0xFF020509)
-                    ),
-                    radius = 1400f
-                )
-            ),
+            .background(Color.Red), // TEMPORARY RED BACKGROUND
         contentAlignment = Alignment.Center
     ) {
 

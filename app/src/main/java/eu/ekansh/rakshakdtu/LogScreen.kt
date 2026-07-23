@@ -30,26 +30,16 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import eu.ekansh.rakshakdtu.data.TokenManager
-
-
-// ─────────────────────────────────────────────────────────────────────────────
-//  LOG SCREEN
-// ─────────────────────────────────────────────────────────────────────────────
+import eu.ekansh.rakshakdtu.ui.theme.*
 
 @Composable
 fun LogScreen(navController: NavHostController) {
     val context = LocalContext.current
-
-    // ✅ FIX: pass Factory so Compose can construct LogViewModel(repository).
-    //    Without this, viewModel() throws IllegalArgumentException because
-    //    LogViewModel has no zero-arg constructor.
     val viewModel: LogViewModel = viewModel(
         factory = LogViewModel.Factory(LogRepository())
     )
-
     val tokenManager = remember { TokenManager(context) }
 
-    // Read token once, hand it to VM, then load data
     LaunchedEffect(Unit) {
         val storedToken = tokenManager.getToken()
         if (storedToken != null) {
@@ -69,27 +59,11 @@ fun LogScreen(navController: NavHostController) {
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFFF6F8FA))
-            .padding(16.dp)
+            .background(LightBg)
+            .padding(horizontal = 16.dp)
     ) {
-        Text("Entry / Exit Logs", fontWeight = FontWeight.Bold, fontSize = 22.sp, color = Color(0xFF1A1C1E))
-        Text("All vehicle movement records on DTU campus", fontSize = 14.sp, color = Color(0xFF6B7280))
-
-        Spacer(Modifier.height(12.dp))
-
-        Box(
-            modifier = Modifier
-                .background(Color(0xFFDCFCE7), RoundedCornerShape(6.dp))
-                .padding(horizontal = 10.dp, vertical = 4.dp)
-        ) {
-            Text(
-                "${viewModel.activeLogs.size} Inside Campus",
-                color = Color(0xFF15803D), fontSize = 12.sp, fontWeight = FontWeight.SemiBold
-            )
-        }
-
-        Spacer(Modifier.height(20.dp))
-
+        Spacer(Modifier.height(16.dp))
+        
         LogTabRow(tabs = tabs, selectedTab = viewModel.selectedTab, onTabSelected = viewModel::onTabSelected)
 
         Spacer(Modifier.height(16.dp))
@@ -115,18 +89,18 @@ fun LogScreen(navController: NavHostController) {
                 when {
                     viewModel.isLoading -> {
                         Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                            CircularProgressIndicator(color = Color(0xFF16A34A))
+                            CircularProgressIndicator(color = AuthBlue)
                         }
                     }
 
                     viewModel.errorMessage != null -> {
                         Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                             Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                                Text("⚠️ ${viewModel.errorMessage}", color = Color(0xFFDC2626), textAlign = TextAlign.Center)
+                                Text("⚠️ ${viewModel.errorMessage}", color = UnauthorizedRed, textAlign = TextAlign.Center)
                                 Spacer(Modifier.height(12.dp))
                                 Button(
                                     onClick = { viewModel.refresh() },
-                                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF16A34A))
+                                    colors = ButtonDefaults.buttonColors(containerColor = AuthBlue)
                                 ) { Text("Retry") }
                             }
                         }
@@ -155,13 +129,9 @@ fun LogScreen(navController: NavHostController) {
                 }
             }
         }
+        Spacer(Modifier.height(80.dp))
     }
 }
-
-
-// ─────────────────────────────────────────────────────────────────────────────
-//  TAB ROW
-// ─────────────────────────────────────────────────────────────────────────────
 
 @Composable
 private fun LogTabRow(tabs: List<String>, selectedTab: Int, onTabSelected: (Int) -> Unit) {
@@ -173,7 +143,7 @@ private fun LogTabRow(tabs: List<String>, selectedTab: Int, onTabSelected: (Int)
             ) {
                 Text(
                     text = title,
-                    color = if (selectedTab == index) Color(0xFF16A34A) else Color(0xFF9CA3AF),
+                    color = if (selectedTab == index) AuthBlue else TextGrey,
                     fontWeight = if (selectedTab == index) FontWeight.Bold else FontWeight.Normal,
                     fontSize = 14.sp
                 )
@@ -182,18 +152,13 @@ private fun LogTabRow(tabs: List<String>, selectedTab: Int, onTabSelected: (Int)
                     modifier = Modifier
                         .width(if (selectedTab == index) 44.dp else 0.dp)
                         .height(2.dp)
-                        .background(Color(0xFF16A34A), RoundedCornerShape(1.dp))
+                        .background(AuthBlue, RoundedCornerShape(1.dp))
                 )
             }
         }
     }
-    HorizontalDivider(thickness = 0.5.dp, color = Color(0xFFE5E7EB))
+    HorizontalDivider(thickness = 0.5.dp, color = BorderGrey)
 }
-
-
-// ─────────────────────────────────────────────────────────────────────────────
-//  TOOLBAR
-// ─────────────────────────────────────────────────────────────────────────────
 
 @Composable
 private fun LogToolbar(
@@ -211,22 +176,22 @@ private fun LogToolbar(
         OutlinedTextField(
             value = query,
             onValueChange = onQueryChange,
-            placeholder = { Text("Search plate, location…", color = Color(0xFFADB5BD), fontSize = 13.sp) },
-            leadingIcon = { Icon(Icons.Default.Search, null, tint = Color(0xFFADB5BD), modifier = Modifier.size(18.dp)) },
+            placeholder = { Text("Search plate, location…", color = TextGrey, fontSize = 13.sp) },
+            leadingIcon = { Icon(Icons.Default.Search, null, tint = TextGrey, modifier = Modifier.size(18.dp)) },
             trailingIcon = {
                 AnimatedVisibility(visible = query.isNotEmpty(), enter = fadeIn(), exit = fadeOut()) {
                     IconButton(onClick = { onQueryChange("") }, modifier = Modifier.size(18.dp)) {
-                        Icon(Icons.Default.Close, null, tint = Color(0xFFADB5BD))
+                        Icon(Icons.Default.Close, null, tint = TextGrey)
                     }
                 }
             },
             singleLine = true,
             shape = RoundedCornerShape(10.dp),
             colors = OutlinedTextFieldDefaults.colors(
-                focusedContainerColor = Color(0xFFF9FAFB),
-                unfocusedContainerColor = Color(0xFFF9FAFB),
-                focusedBorderColor = Color(0xFF16A34A),
-                unfocusedBorderColor = Color(0xFFE5E7EB),
+                focusedContainerColor = LightBg,
+                unfocusedContainerColor = LightBg,
+                focusedBorderColor = AuthBlue,
+                unfocusedBorderColor = BorderGrey,
             ),
             modifier = Modifier.weight(1f).height(50.dp)
         )
@@ -236,11 +201,6 @@ private fun LogToolbar(
         }
     }
 }
-
-
-// ─────────────────────────────────────────────────────────────────────────────
-//  VEHICLE FILTER DROPDOWN
-// ─────────────────────────────────────────────────────────────────────────────
 
 @Composable
 private fun VehicleFilterDropdown(selected: String, onSelected: (String) -> Unit) {
@@ -256,15 +216,15 @@ private fun VehicleFilterDropdown(selected: String, onSelected: (String) -> Unit
             trailingIcon = {
                 Icon(
                     if (expanded) Icons.Default.ArrowDropUp else Icons.Default.ArrowDropDown,
-                    null, tint = Color(0xFF6B7280)
+                    null, tint = TextGrey
                 )
             },
             shape = RoundedCornerShape(10.dp),
             colors = OutlinedTextFieldDefaults.colors(
-                focusedContainerColor = Color(0xFFF9FAFB),
-                unfocusedContainerColor = Color(0xFFF9FAFB),
-                focusedBorderColor = Color(0xFF16A34A),
-                unfocusedBorderColor = Color(0xFFE5E7EB),
+                focusedContainerColor = LightBg,
+                unfocusedContainerColor = LightBg,
+                focusedBorderColor = AuthBlue,
+                unfocusedBorderColor = BorderGrey,
             ),
             modifier = Modifier.width(160.dp).height(50.dp).clickable { expanded = !expanded }
         )
@@ -279,7 +239,7 @@ private fun VehicleFilterDropdown(selected: String, onSelected: (String) -> Unit
                         Text(
                             display,
                             fontWeight = if (selected == key) FontWeight.Bold else FontWeight.Normal,
-                            color = if (selected == key) Color(0xFF16A34A) else Color(0xFF1A1C1E)
+                            color = if (selected == key) AuthBlue else Color.Black
                         )
                     },
                     onClick = { onSelected(key); expanded = false }
@@ -288,11 +248,6 @@ private fun VehicleFilterDropdown(selected: String, onSelected: (String) -> Unit
         }
     }
 }
-
-
-// ─────────────────────────────────────────────────────────────────────────────
-//  LOG TABLE
-// ─────────────────────────────────────────────────────────────────────────────
 
 @Composable
 private fun LogTable(logs: List<Logs>, modifier: Modifier = Modifier, onLogClick: (Logs) -> Unit = {}) {
@@ -316,20 +271,20 @@ private fun LogTable(logs: List<Logs>, modifier: Modifier = Modifier, onLogClick
                     HeaderCell("EVENT",         0.8f)
                 }
 
-                HorizontalDivider(color = Color(0xFFE5E7EB))
+                HorizontalDivider(color = BorderGrey)
 
                 if (logs.isEmpty()) {
                     Box(
                         modifier = Modifier.fillMaxWidth().height(200.dp),
                         contentAlignment = Alignment.Center
                     ) {
-                        Text("No logs found", color = Color(0xFF9CA3AF), fontSize = 14.sp)
+                        Text("No logs found", color = TextGrey, fontSize = 14.sp)
                     }
                 } else {
                     LazyColumn {
                         items(logs, key = { it.id }) { log ->
                             LogRow(log = log, onClick = { onLogClick(log) })
-                            HorizontalDivider(color = Color(0xFFF3F4F6))
+                            HorizontalDivider(color = LightBg)
                         }
                     }
                 }
@@ -338,13 +293,8 @@ private fun LogTable(logs: List<Logs>, modifier: Modifier = Modifier, onLogClick
     }
 }
 
-
-// ─────────────────────────────────────────────────────────────────────────────
-//  LOG ROW
-// ─────────────────────────────────────────────────────────────────────────────
-
 @Composable
-private fun LogRow(log: Logs,onClick: () -> Unit = {}) {
+private fun LogRow(log: Logs, onClick: () -> Unit = {}) {
     Row(
         modifier = Modifier.width(860.dp).padding(horizontal = 12.dp, vertical = 12.dp).clickable { onClick() },
         verticalAlignment = Alignment.CenterVertically
@@ -360,27 +310,27 @@ private fun LogRow(log: Logs,onClick: () -> Unit = {}) {
         }
 
         Column(modifier = Modifier.weight(2f)) {
-            Text(log.camera.cameraLocation, fontWeight = FontWeight.SemiBold, fontSize = 13.sp, color = Color(0xFF1A1C1E))
-            Text(log.camera.cameraType, color = Color(0xFF9CA3AF), fontSize = 11.sp)
+            Text(log.camera.cameraLocation, fontWeight = FontWeight.SemiBold, fontSize = 13.sp, color = Color.Black)
+            Text(log.camera.cameraType, color = TextGrey, fontSize = 11.sp)
         }
 
-        Text(formatDateTime(log.entryTime), modifier = Modifier.weight(1.6f), fontSize = 12.sp, color = Color(0xFF374151), lineHeight = 18.sp)
+        Text(formatDateTime(log.entryTime), modifier = Modifier.weight(1.6f), fontSize = 12.sp, color = Color.Black, lineHeight = 18.sp)
 
         Text(
             text = if (log.exitTime != null) formatDateTime(log.exitTime) else "Still Inside",
             modifier = Modifier.weight(1.6f),
             fontSize = 12.sp,
-            color = if (log.exitTime != null) Color(0xFF374151) else Color(0xFF9CA3AF),
+            color = if (log.exitTime != null) Color.Black else TextGrey,
             lineHeight = 18.sp
         )
 
-        Text(formatDuration(log.vehicleDuration), modifier = Modifier.weight(1.2f), fontSize = 12.sp, color = Color(0xFF374151))
+        Text(formatDuration(log.vehicleDuration), modifier = Modifier.weight(1.2f), fontSize = 12.sp, color = Color.Black)
 
         Box(modifier = Modifier.weight(1f)) {
             val (bg, fg, label) = if (log.isAuthorized)
-                Triple(Color(0xFFDCFCE7), Color(0xFF15803D), "✓ Auth")
+                Triple(SuccessGreen.copy(alpha = 0.1f), SuccessGreen, "✓ Auth")
             else
-                Triple(Color(0xFFFFEBEE), Color(0xFFDC2626), "✗ Unauth")
+                Triple(UnauthorizedRed.copy(alpha = 0.1f), UnauthorizedRed, "✗ Unauth")
             Text(
                 label,
                 modifier = Modifier.background(bg, RoundedCornerShape(12.dp)).padding(horizontal = 8.dp, vertical = 4.dp),
@@ -390,7 +340,7 @@ private fun LogRow(log: Logs,onClick: () -> Unit = {}) {
 
         Box(modifier = Modifier.weight(0.8f)) {
             val (bg, fg, label) = if (log.exitTime != null)
-                Triple(Color(0xFFF3F4F6), Color(0xFF6B7280), "Exited")
+                Triple(FlaggedGrey, TextGrey, "Exited")
             else
                 Triple(Color(0xFFFFF8E1), Color(0xFFD97706), "Entry")
             Text(
@@ -402,24 +352,14 @@ private fun LogRow(log: Logs,onClick: () -> Unit = {}) {
     }
 }
 
-
-// ─────────────────────────────────────────────────────────────────────────────
-//  HEADER CELL
-// ─────────────────────────────────────────────────────────────────────────────
-
 @Composable
 private fun RowScope.HeaderCell(text: String, weight: Float) {
     Text(
         text = text,
         modifier = Modifier.weight(weight),
-        fontSize = 11.sp, fontWeight = FontWeight.Bold, color = Color(0xFF6B7280), letterSpacing = 0.5.sp
+        fontSize = 11.sp, fontWeight = FontWeight.Bold, color = TextGrey, letterSpacing = 0.5.sp
     )
 }
-
-
-// ─────────────────────────────────────────────────────────────────────────────
-//  PAGINATION
-// ─────────────────────────────────────────────────────────────────────────────
 
 @Composable
 private fun PaginationRow(currentPage: Int, totalPages: Int, onPageChange: (Int) -> Unit) {
@@ -433,26 +373,26 @@ private fun PaginationRow(currentPage: Int, totalPages: Int, onPageChange: (Int)
         verticalAlignment = Alignment.CenterVertically
     ) {
         TextButton(onClick = { if (currentPage > 1) onPageChange(currentPage - 1) }, enabled = currentPage > 1) {
-            Text("← Prev", fontSize = 13.sp, color = if (currentPage > 1) Color(0xFF16A34A) else Color(0xFFD1D5DB))
+            Text("← Prev", fontSize = 13.sp, color = if (currentPage > 1) AuthBlue else BorderGrey)
         }
 
         var prev = 0
         visiblePages.forEach { page ->
             if (prev != 0 && page - prev > 1) {
-                Text("…", modifier = Modifier.padding(horizontal = 4.dp), color = Color(0xFF9CA3AF))
+                Text("…", modifier = Modifier.padding(horizontal = 4.dp), color = TextGrey)
             }
             val isCurrent = page == currentPage
             Box(
                 modifier = Modifier
                     .padding(horizontal = 3.dp).size(32.dp)
-                    .background(if (isCurrent) Color(0xFF16A34A) else Color.Transparent, RoundedCornerShape(6.dp))
+                    .background(if (isCurrent) AuthBlue else Color.Transparent, RoundedCornerShape(6.dp))
                     .clip(RoundedCornerShape(6.dp))
                     .clickable { onPageChange(page) },
                 contentAlignment = Alignment.Center
             ) {
                 Text(
                     "$page", fontSize = 13.sp,
-                    color = if (isCurrent) Color.White else Color(0xFF374151),
+                    color = if (isCurrent) Color.White else Color.Black,
                     fontWeight = if (isCurrent) FontWeight.Bold else FontWeight.Normal
                 )
             }
@@ -460,15 +400,10 @@ private fun PaginationRow(currentPage: Int, totalPages: Int, onPageChange: (Int)
         }
 
         TextButton(onClick = { if (currentPage < totalPages) onPageChange(currentPage + 1) }, enabled = currentPage < totalPages) {
-            Text("Next →", fontSize = 13.sp, color = if (currentPage < totalPages) Color(0xFF16A34A) else Color(0xFFD1D5DB))
+            Text("Next →", fontSize = 13.sp, color = if (currentPage < totalPages) AuthBlue else BorderGrey)
         }
     }
 }
-
-
-// ─────────────────────────────────────────────────────────────────────────────
-//  HELPERS
-// ─────────────────────────────────────────────────────────────────────────────
 
 private fun formatDateTime(iso: String): String {
     return try {

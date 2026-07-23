@@ -16,6 +16,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.navigation.NavHostController
+import eu.ekansh.rakshakdtu.ui.theme.*
 import org.osmdroid.config.Configuration
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory
 import org.osmdroid.util.GeoPoint
@@ -81,8 +82,7 @@ fun MapScreen(navController: NavHostController) {
         Card(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(16.dp)
-                .statusBarsPadding(),
+                .padding(16.dp),
             shape = RoundedCornerShape(24.dp),
             elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
             colors = CardDefaults.cardColors(containerColor = Color.White)
@@ -93,21 +93,23 @@ fun MapScreen(navController: NavHostController) {
                     .padding(horizontal = 16.dp, vertical = 4.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Icon(Icons.Default.Search, contentDescription = "Search", tint = Color.Gray)
+                Icon(Icons.Default.Search, contentDescription = "Search", tint = TextGrey)
                 TextField(
                     value = searchQuery,
                     onValueChange = { searchQuery = it },
-                    placeholder = { Text("Search vehicle ID, plate, or building", color = Color.Gray, fontSize = 14.sp) },
+                    placeholder = { Text("Search vehicle ID, plate, or building", color = TextGrey, fontSize = 14.sp) },
                     modifier = Modifier.weight(1f),
-                    colors = TextFieldDefaults.textFieldColors(
-                        containerColor = Color.Transparent,
+                    colors = TextFieldDefaults.colors(
+                        focusedContainerColor = Color.Transparent,
+                        unfocusedContainerColor = Color.Transparent,
+                        disabledContainerColor = Color.Transparent,
                         focusedIndicatorColor = Color.Transparent,
                         unfocusedIndicatorColor = Color.Transparent
                     ),
                     singleLine = true
                 )
                 IconButton(onClick = { /* Filter action */ }) {
-                    Icon(Icons.Default.FilterList, contentDescription = "Filter", tint = Color(0xFF0D47A1))
+                    Icon(Icons.Default.FilterList, contentDescription = "Filter", tint = AuthBlue)
                 }
             }
         }
@@ -139,7 +141,7 @@ fun MapScreen(navController: NavHostController) {
 
             FloatingActionButton(
                 onClick = { /* My Location action */ },
-                containerColor = Color(0xFF0D47A1),
+                containerColor = AuthBlue,
                 contentColor = Color.White,
                 modifier = Modifier.size(48.dp)
             ) {
@@ -161,7 +163,7 @@ fun MapScreen(navController: NavHostController) {
             modifier = Modifier
                 .align(Alignment.Center)
                 .offset(y = 100.dp, x = 60.dp),
-            color = Color(0xFFC62828),
+            color = UnauthorizedRed,
             shape = RoundedCornerShape(4.dp)
         ) {
             Text(
